@@ -1,5 +1,5 @@
 {
-  "name": "enclave-cfo",
+  "name": "cfo-one",
   "version": "1.0.0",
   "description": "Autonomous CFO for the Company of One with Hardware-Enforced Enclave Guardrails",
   "main": "dist/index.js",
@@ -8,6 +8,9 @@
     "build": "tsc",
     "test": "node --test --import tsx tests/**/*.test.ts",
     "demo": "tsx src/cli/demo.ts",
+    "scan": "tsx src/cli/scan.ts",
+    "status": "tsx src/cli/status.ts",
+    "cfo": "tsx src/cli/scan.ts",
     "web": "tsx src/web/server.ts"
   },
   "keywords": ["near", "outlayer", "mercury", "ai-cfo", "tee", "intel-tdx", "autonomous-business"],

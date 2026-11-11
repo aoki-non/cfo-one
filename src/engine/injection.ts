@@ -45,3 +45,4 @@ export function evaluateInstructionAnomalies(invoice: ExtractedInvoice): ThreatS
 
   return signals;
 }
+

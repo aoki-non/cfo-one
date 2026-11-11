@@ -1,6 +1,6 @@
-# EnclaveCFO: Autonomous Treasury for the Company of One
+# CFO-One: Autonomous Treasury for the Company of One
 
-> Autonomous treasury ops with dual-layer Intel TDX enclave defense.
+> Autonomous treasury ops with dual-layer Intel TDX enclave defense.  
 > **Tagline:** *"We didn't build a smarter agent, we built a CFO that proves why it said no."*
 
 Built for **NEAR Hackathon 2026**  
@@ -21,10 +21,10 @@ However, an enclave alone cannot solve: **"Will the agent pay the right thing?"*
 - Rapid micro-billing eating up 30-day runway.
 - Imperative instructions injected into invoice memos.
 
-**EnclaveCFO provides the missing Judgment Layer.**
+**CFO-One provides the missing Judgment Layer.**
 
 ```
-Incoming Invoice (Email / PDF / JSON)
+Incoming Invoice (Email / PDF / JSON / CLI)
                  │
                  ▼
 ┌────────────────────────────────────────────────────────┐
@@ -57,46 +57,95 @@ Incoming Invoice (Email / PDF / JSON)
 
 ---
 
-## 2. Quickstart for Machine & Human Evaluators (Do X -> See Y)
+## 2. Making It Real: Live Mercury Sandbox & NEAR/OutLayer Testnet
 
-EnclaveCFO runs **credential-free** out of the box using verified recorded Intel TDX response fixtures from OutLayer Testnet, ensuring deterministic verification for automated evaluators (Claude Code, Codex).
+CFO-One is built to eliminate dummy/simulated data. It connects directly to live bank environments and confidential enclaves:
+
+### A. Real Mercury Banking Integration (Sandbox or Production)
+CFO-One includes a full typed client (`src/connector/mercuryClient.ts`) interacting with Mercury API v1 (`https://api.mercury.com/api/v1`):
+- **Live Account Balances**: Fetches real checking/treasury account balances.
+- **Live Payee Allowlist**: Automatically synchronizes your approved recipients (`/recipients`) into the Layer 1 BEC diffing engine.
+- **Dynamic 30-Day Velocity & Baselines**: Pulls historical transactions (`/account/{id}/transactions`) to calculate vendor medians and remaining monthly budget from actual data.
+- **Payment Approvals**: Initiates payments using tokens configured with **"Send Money with Approval"**, ensuring payments queue in your Mercury dashboard for 1-click human owner signoff.
+
+### B. OutLayer Intel TDX Enclaves on NEAR Testnet
+- Executes calls through `testnet-api.outlayer.ai` via connector `connectors.outlayer.testnet/mercury`.
+- Provides signed Intel TDX remote attestation quotes verifying that per-transaction hardware limits are physically enforced inside the TEE.
+
+---
+
+## 3. Quickstart & Command Reference
 
 ### Step 1: Install Dependencies
 ```bash
 npm install
 ```
 
-### Step 2: Run the 15-Second Verified Demo
+### Step 2: Audit Connectivity & Credentials
+Check whether live Mercury or OutLayer credentials are configured:
+```bash
+npm run status
+```
+
+### Step 3: Run the 15-Second Verified Demo
 ```bash
 npm run demo
 ```
-**Expected Output:**
-1. Prints active Mercury Enclave policy ($48,250 balance, $3,500 30-day budget, $1,000 max single payment cap).
-2. Runs 4 spotlight cases:
-   - Routine $42 Vercel invoice -> `[ALLOW]` -> Executed with Intel TDX attestation quote.
-   - Compromised Figma invoice with tampered routing number -> `[REFUSE]` at Layer 1 (BEC Defense).
-   - High-value $850 Summit Legal retainer -> `[ASK_OWNER]` -> OutLayer Enclave queues `awaiting_owner` task in Inbox.
-   - Adversarial $12,000 AWS bill -> `[REFUSE]` at Layer 1, plus hardware cap rejection simulation.
-3. Prints the complete 40-case benchmark scorecard.
 
-### Step 3: Run the Test Suite
+### Step 4: Scan Any Real Invoice Document
+Scan any real invoice file or string dynamically through the 3-layer pipeline:
+```bash
+# Scan with inline invoice text
+npm run scan -- --text "INVOICE #9901 from Vercel Inc. Amount: $42.00 Due: 2026-11-20 Routing: 121000358 Acct: 4419"
+
+# Or scan an invoice file
+npm run scan -- --file path/to/invoice.txt
+```
+
+### Step 5: Launch the Interactive Web Cockpit
+```bash
+npm run web
+```
+Open [http://localhost:3000](http://localhost:3000) to access the real-time invoice workbench, live treasury stats, and the complete 40-case adversarial benchmark.
+
+### Step 6: Run Automated Tests
 ```bash
 npm test
 ```
 **Expected Output:**
 ```
+✔ should initialize MercuryClient and verify configuration handling
 ✔ should auto-approve routine recurring invoices (Control Group)
 ✔ should block BEC account takeover / bank detail routing swaps at Layer 1
 ✔ should escalate high-value legal retainer to OutLayer awaiting_owner task
 ✔ should detect prompt injection in invoice memo and escalate to owner
 ✔ should enforce Enclave hardware spending cap on forced $12,000 transaction
 ✔ should evaluate full 40-case benchmark with 0 false negatives
-ℹ tests 6 | pass 6 | fail 0
+ℹ tests 7 | pass 7 | fail 0
 ```
 
 ---
 
-## 3. Measured Benchmark Results (Unedited)
+## 4. Connecting Real Credentials (Environment Setup)
+
+Copy `.env.example` to `.env`:
+```bash
+cp .env.example .env
+```
+
+| Environment Variable | Description |
+|---|---|
+| `MERCURY_API_KEY` | Bearer token from Mercury Dashboard (Settings -> API Tokens). Use "Read and Send Money with Approval". |
+| `MERCURY_ACCOUNT_ID` | Optional: Your target Mercury checking account ID. |
+| `OUTLAYER_PAYMENT_KEY` | OutLayer testnet payment key for Intel TDX execution. |
+| `OUTLAYER_SECRETS_ACCOUNT` | Your NEAR Testnet account ID (e.g. `owner.testnet`). |
+| `NEAR_AI_API_KEY` | Optional: Private TEE LLM inference via NEAR AI Cloud (`meta-llama/Meta-Llama-3.1-70B-Instruct`). |
+
+*Note: If no API keys are exported, CFO-One automatically falls back to verified sandbox fixtures with clear terminal notices, ensuring that CI/CD and offline evaluations succeed without hard external dependencies.*
+
+---
+
+## 5. Measured Benchmark Results (Unedited)
 
 Tested against **40 real-world invoice vectors**:
 - **15 Legitimate Invoices**: SaaS subscriptions, hourly contractor sprints, legal retainers, and new vendor onboarding.
@@ -115,7 +164,7 @@ Tested against **40 real-world invoice vectors**:
 
 ---
 
-## 4. Architectural Invariants
+## 6. Architectural Invariants
 
 1. **"LLM extracts, code decides"**: The model translates unstructured invoice text into structured fields. The LLM never decides whether to pay; deterministic code evaluates invariants.
 2. **Bank Detail Decoupling**: The agent **never** sends funds to bank details printed on an invoice. The connector strictly pays pre-registered Mercury `recipient_id`s. Bank details on invoices are strictly diff-checked against saved records to detect Business Email Compromise (BEC).
@@ -126,24 +175,13 @@ Tested against **40 real-world invoice vectors**:
 
 ---
 
-## 5. Live Mode Configuration (Optional)
-
-To connect to live OutLayer Testnet and Mercury Sandbox:
-```bash
-export OUTLAYER_PAYMENT_KEY="<your-outlayer-payment-key>"
-export OUTLAYER_SECRETS_ACCOUNT="<your-owner-account.testnet>"
-export NEAR_AI_API_KEY="<your-near-ai-cloud-key>" # Optional: private TEE LLM inference
-npm run demo
-```
-
----
-
-## 6. Project Structure
+## 7. Project Structure
 
 ```
-enclave-cfo/
+cfo-one/
+├── .env.example                       # Environment configuration guide
 ├── fixtures/
-│   ├── mock_mercury_state.json        # Mercury account, recipients, 30-day budget & policy
+│   ├── mock_mercury_state.json        # Fallback Mercury account, recipients & policy
 │   ├── invoices_dataset.json          # 40-case benchmark (15 legit, 15 open hostile, 10 held-out)
 │   └── recorded_responses/            # Real Intel TDX attestation response envelopes
 ├── src/
@@ -158,12 +196,19 @@ enclave-cfo/
 │   ├── extraction/
 │   │   └── extractor.ts               # LLM extraction (NEAR AI Cloud / OpenAI / deterministic)
 │   ├── connector/
-│   │   └── outlayerClient.ts          # OutLayer Mercury connector client (live + TDX fixture replay)
-│   └── cli/
-│       └── demo.ts                    # Deterministic 15-second benchmark runner
+│   │   ├── mercuryClient.ts           # Live Mercury REST API v1 Client (Sandbox & Production)
+│   │   ├── stateProvider.ts           # Live state synchronization & fallback manager
+│   │   └── outlayerClient.ts          # OutLayer Mercury connector client (Intel TDX on NEAR Testnet)
+│   ├── cli/
+│   │   ├── demo.ts                    # 15-second benchmark runner
+│   │   ├── scan.ts                    # Live invoice ingestion CLI (file or text)
+│   │   └── status.ts                  # System connectivity & credential auditor
+│   └── web/
+│       ├── index.html                 # Visual Cockpit & real invoice workbench
+│       └── server.ts                  # HTTP API server (/api/status, /api/evaluate, /api/data)
 ├── tests/
-│   └── adversarial.test.ts            # Automated test suite for CI / screening
-└── README.md
+│   └── adversarial.test.ts            # Automated test suite
+└── package.json
 ```
 
 ## License

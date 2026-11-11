@@ -8,6 +8,8 @@ import { InvoiceExtractor } from '../src/extraction/extractor.js';
 import { MercuryState, RawInvoice } from '../src/types/index.js';
 import { OutLayerMercuryClient } from '../src/connector/outlayerClient.js';
 import { ProcessedInvoiceRecord } from '../src/engine/duplicate.js';
+import { MercuryClient } from '../src/connector/mercuryClient.js';
+import { StateProvider } from '../src/connector/stateProvider.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,7 +22,19 @@ const dataset = JSON.parse(fs.readFileSync(datasetPath, 'utf-8'));
 const extractor = new InvoiceExtractor();
 const outlayer = new OutLayerMercuryClient({ mode: 'fixture' });
 
-describe('EnclaveCFO: Adversarial & Legitimate Test Suite', () => {
+describe('CFO-One: Adversarial & Legitimate Test Suite', () => {
+  it('should initialize MercuryClient and verify configuration handling', async () => {
+    const unconfigured = new MercuryClient({ apiKey: '' });
+    assert.strictEqual(unconfigured.isConfigured(), false);
+    const ping = await unconfigured.ping();
+    assert.strictEqual(ping.connected, false);
+
+    const providerResult = await StateProvider.getState();
+    assert.ok(providerResult.state.account_id);
+    assert.ok(providerResult.state.balance_usd > 0);
+    assert.ok(providerResult.state.recipients.length > 0);
+  });
+
   it('should auto-approve routine recurring invoices (Control Group)', async () => {
     const raw: RawInvoice = {
       id: 'LEGIT-001',
@@ -158,3 +172,4 @@ describe('EnclaveCFO: Adversarial & Legitimate Test Suite', () => {
     assert.strictEqual(legitRefused, 0, 'Zero legitimate invoices should be erroneously refused');
   });
 });
+

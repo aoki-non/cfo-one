@@ -6,6 +6,7 @@ import { evaluateInvoice } from '../engine/verdict.js';
 import { OutLayerMercuryClient } from '../connector/outlayerClient.js';
 import { ProcessedInvoiceRecord } from '../engine/duplicate.js';
 import { InvoiceExtractor } from '../extraction/extractor.js';
+import { StateProvider } from '../connector/stateProvider.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,22 +27,22 @@ function printHeader(title: string) {
 }
 
 async function runDemo() {
-  printHeader('ENCLAVE CFO: AUTONOMOUS TREASURY WITH DUAL-LAYER ENCLAVE DEFENSE');
+  printHeader('CFO-ONE: AUTONOMOUS TREASURY WITH DUAL-LAYER ENCLAVE DEFENSE');
   console.log(`${DIM}Architecture: "LLM extracts, code decides, Intel TDX enclave enforces."${RESET}`);
-  console.log(`${DIM}Connectors: OutLayer Mercury Connector (testnet / sandbox)${RESET}\n`);
+  console.log(`${DIM}Connectors: Mercury Banking (Sandbox/Live) + OutLayer TEE (NEAR Testnet)${RESET}\n`);
 
-  // 1. Load mock Mercury state and dataset
+  // 1. Load Mercury state (Live API or verified sandbox fallback)
+  const stateResult = await StateProvider.getState();
+  const state = stateResult.state;
   const fixturesDir = path.resolve(__dirname, '../../fixtures');
-  const statePath = path.join(fixturesDir, 'mock_mercury_state.json');
   const datasetPath = path.join(fixturesDir, 'invoices_dataset.json');
-
-  const state = JSON.parse(fs.readFileSync(statePath, 'utf-8')) as MercuryState;
   const rawDataset = JSON.parse(fs.readFileSync(datasetPath, 'utf-8'));
 
   const extractor = new InvoiceExtractor();
-  const outlayer = new OutLayerMercuryClient({ mode: 'fixture' });
+  const outlayer = new OutLayerMercuryClient();
 
-  console.log(`${BOLD}1. ACTIVE MERCURY ENCLAVE POLICY${RESET}`);
+  console.log(`${BOLD}1. ACTIVE MERCURY ENCLAVE POLICY${RESET} ${stateResult.source === 'live_mercury' ? `${GREEN}[LIVE MERCURY ACTIVE]${RESET}` : `${YELLOW}[SANDBOX FIXTURE]${RESET}`}`);
+  console.log(`   Account ID:        ${state.account_id}`);
   console.log(`   Account Balance:   ${GREEN}$${state.balance_usd.toLocaleString()}${RESET}`);
   console.log(`   30-Day Budget:     ${GREEN}$${state.budget.monthly_limit_usd.toLocaleString()}${RESET} ($${state.budget.spent_or_pending_usd.toLocaleString()} spent, $${state.budget.remaining_usd.toLocaleString()} remaining)`);
   console.log(`   Hard Enclave Cap:  ${YELLOW}$${state.policy.max_payment_usd.toFixed(2)}${RESET} per transaction`);

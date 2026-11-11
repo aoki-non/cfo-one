@@ -150,14 +150,14 @@ Output only raw JSON.`;
     }
 
     // 4. Bank details
-    const routingMatch = text.match(/Routing(?:\s*Number)?[:\s]*([0-9]{9})/i);
-    const acctMatch = text.match(/Account(?:\s*Number)?[:\s]*(?:\*+|x+)?([0-9]{4})/i);
+    const routingMatch = text.match(/(?:Routing|ABA)(?:\s*(?:Number|#|No|Code))?[:\s]*([0-9]{9})/i);
+    const acctMatch = text.match(/(?:Account|Acct)(?:\s*(?:Number|#|No))?[:\s]*(?:\*+|x+)?([0-9]{4,})/i);
 
     const bank_details =
       routingMatch || acctMatch
         ? {
             routing_number: routingMatch ? routingMatch[1] : '',
-            account_number_last4: acctMatch ? acctMatch[1] : ''
+            account_number_last4: acctMatch ? acctMatch[1].slice(-4) : ''
           }
         : undefined;
 
@@ -189,3 +189,4 @@ Output only raw JSON.`;
     };
   }
 }
+
