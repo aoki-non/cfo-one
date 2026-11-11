@@ -57,18 +57,25 @@ Incoming Invoice (Email / PDF / JSON / CLI)
 
 ---
 
-## 2. Making It Real: Live Mercury Sandbox & NEAR/OutLayer Testnet
+## 2. Making It Real: Live Multi-Rail Treasury (Airwallex Demo, Mercury, NEAR Testnet)
 
 CFO-One is built to eliminate dummy/simulated data. It connects directly to live bank environments and confidential enclaves:
 
-### A. Real Mercury Banking Integration (Sandbox or Production)
+### A. Airwallex Global Multi-Currency API (Demo / Sandbox / Live) — *Recommended Globally*
+CFO-One includes a full typed client (`src/connector/airwallexClient.ts`) interacting with the Airwallex v1 API (`https://api-demo.airwallex.com/api/v1`):
+- **Universal Developer Access**: Free demo accounts are available globally (no US entity or domestic KYC needed).
+- **Multi-Currency Balances**: Synchronizes real wallet balances across USD, EUR, GBP, and local clearing routes.
+- **Beneficiary Allowlist & BEC Defense**: Fetches saved beneficiaries (`/beneficiaries`) and diff-checks invoice bank account / routing / IBAN details to detect Business Email Compromise.
+- **Payout Transfers**: Dispatches payments (`/transfers/create`) with idempotency keys and native dashboard approval flows.
+
+### B. Mercury Banking Integration (US Sandbox / Production)
 CFO-One includes a full typed client (`src/connector/mercuryClient.ts`) interacting with Mercury API v1 (`https://api.mercury.com/api/v1`):
 - **Live Account Balances**: Fetches real checking/treasury account balances.
 - **Live Payee Allowlist**: Automatically synchronizes your approved recipients (`/recipients`) into the Layer 1 BEC diffing engine.
 - **Dynamic 30-Day Velocity & Baselines**: Pulls historical transactions (`/account/{id}/transactions`) to calculate vendor medians and remaining monthly budget from actual data.
 - **Payment Approvals**: Initiates payments using tokens configured with **"Send Money with Approval"**, ensuring payments queue in your Mercury dashboard for 1-click human owner signoff.
 
-### B. OutLayer Intel TDX Enclaves on NEAR Testnet
+### C. OutLayer Intel TDX Enclaves on NEAR Testnet
 - Executes calls through `testnet-api.outlayer.ai` via connector `connectors.outlayer.testnet/mercury`.
 - Provides signed Intel TDX remote attestation quotes verifying that per-transaction hardware limits are physically enforced inside the TEE.
 

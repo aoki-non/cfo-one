@@ -3,19 +3,20 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { MercuryState } from '../types/index.js';
 import { MercuryClient } from './mercuryClient.js';
+import { AirwallexClient } from './airwallexClient.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export interface StateProviderResult {
   state: MercuryState;
-  source: 'live_mercury' | 'local_fixture';
+  source: 'live_airwallex' | 'live_mercury' | 'local_fixture';
   message: string;
 }
 
 export class StateProvider {
   private static cachedState: MercuryState | null = null;
-  private static cachedSource: 'live_mercury' | 'local_fixture' = 'local_fixture';
+  private static cachedSource: 'live_airwallex' | 'live_mercury' | 'local_fixture' = 'local_fixture';
 
   public static async getState(forceRefresh: boolean = false): Promise<StateProviderResult> {
     if (!forceRefresh && this.cachedState) {
@@ -26,8 +27,27 @@ export class StateProvider {
       };
     }
 
-    const mercuryClient = new MercuryClient();
+    // 1. Check Airwallex Demo/Production Credentials
+    const airwallexClient = new AirwallexClient();
+    if (airwallexClient.isConfigured()) {
+      try {
+        console.log('[CFO-One] AIRWALLEX credentials detected. Connecting to Airwallex API...');
+        const liveState = await airwallexClient.syncState();
+        this.cachedState = liveState;
+        this.cachedSource = 'live_airwallex';
+        console.log(`[CFO-One] Connected to Live Airwallex! Balance: $${liveState.balance_usd}, Beneficiaries: ${liveState.recipients.length}`);
+        return {
+          state: liveState,
+          source: 'live_airwallex',
+          message: `Live Airwallex Demo connected. Balance: $${liveState.balance_usd}, Beneficiaries: ${liveState.recipients.length}`
+        };
+      } catch (err: any) {
+        console.warn(`[CFO-One] Live Airwallex sync failed: ${err.message}.`);
+      }
+    }
 
+    // 2. Check Mercury Credentials
+    const mercuryClient = new MercuryClient();
     if (mercuryClient.isConfigured()) {
       try {
         console.log('[CFO-One] MERCURY_API_KEY detected. Connecting to live Mercury API...');
@@ -43,12 +63,11 @@ export class StateProvider {
       } catch (err: any) {
         console.warn(`[CFO-One] Live Mercury sync failed: ${err.message}. Falling back to sandbox baseline.`);
       }
-    } else {
-      // Informative log
-      if (process.env.DEBUG || process.env.NODE_ENV !== 'test') {
-        console.log('[CFO-One] No MERCURY_API_KEY configured. Running with sandbox fixture baseline.');
-        console.log('[CFO-One] Set MERCURY_API_KEY in your environment to connect directly to live Mercury Sandbox or Production.');
-      }
+    }
+
+    // Informative log
+    if (process.env.DEBUG || process.env.NODE_ENV !== 'test') {
+      console.log('[CFO-One] No live banking credentials configured (Airwallex / Mercury). Running with sandbox fixture baseline.');
     }
 
     // Load local fixture state

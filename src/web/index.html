@@ -263,12 +263,15 @@
         document.getElementById('val-payees').innerText = `${st.recipients.length} Payees`;
 
         const badge = document.getElementById('mercury-badge');
-        if (st.mercury_configured) {
+        if (st.airwallex_configured) {
+          badge.className = 'badge badge-green';
+          badge.innerText = 'Airwallex Demo: Live';
+        } else if (st.mercury_configured) {
           badge.className = 'badge badge-green';
           badge.innerText = 'Mercury API: Live';
         } else {
           badge.className = 'badge badge-yellow';
-          badge.innerText = 'Mercury Sandbox: Fixture';
+          badge.innerText = 'Treasury Sandbox: Local Fixture';
         }
       } catch (err) {
         console.warn('Status load error:', err);

@@ -9,6 +9,7 @@ import { MercuryState, RawInvoice } from '../src/types/index.js';
 import { OutLayerMercuryClient } from '../src/connector/outlayerClient.js';
 import { ProcessedInvoiceRecord } from '../src/engine/duplicate.js';
 import { MercuryClient } from '../src/connector/mercuryClient.js';
+import { AirwallexClient } from '../src/connector/airwallexClient.js';
 import { StateProvider } from '../src/connector/stateProvider.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -23,6 +24,16 @@ const extractor = new InvoiceExtractor();
 const outlayer = new OutLayerMercuryClient({ mode: 'fixture' });
 
 describe('CFO-One: Adversarial & Legitimate Test Suite', () => {
+  it('should initialize AirwallexClient and verify demo configuration handling', async () => {
+    const unconfigured = new AirwallexClient({ clientId: '', apiKey: '' });
+    assert.strictEqual(unconfigured.isConfigured(), false);
+    const ping = await unconfigured.ping();
+    assert.strictEqual(ping.connected, false);
+
+    const configuredMock = new AirwallexClient({ clientId: 'mock_id', apiKey: 'mock_key' });
+    assert.strictEqual(configuredMock.isConfigured(), true);
+  });
+
   it('should initialize MercuryClient and verify configuration handling', async () => {
     const unconfigured = new MercuryClient({ apiKey: '' });
     assert.strictEqual(unconfigured.isConfigured(), false);

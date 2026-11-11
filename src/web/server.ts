@@ -9,6 +9,7 @@ import { OutLayerMercuryClient } from '../connector/outlayerClient.js';
 import { ProcessedInvoiceRecord } from '../engine/duplicate.js';
 import { StateProvider } from '../connector/stateProvider.js';
 import { MercuryClient } from '../connector/mercuryClient.js';
+import { AirwallexClient } from '../connector/airwallexClient.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,6 +22,7 @@ const rawDataset = JSON.parse(fs.readFileSync(datasetPath, 'utf-8'));
 const extractor = new InvoiceExtractor();
 const outlayer = new OutLayerMercuryClient();
 const mercuryClient = new MercuryClient();
+const airwallexClient = new AirwallexClient();
 
 const liveProcessedInvoices: ProcessedInvoiceRecord[] = [];
 
@@ -113,6 +115,7 @@ const server = http.createServer(async (req, res) => {
     const statusData = {
       name: 'cfo-one',
       mode: stateResult.source,
+      airwallex_configured: airwallexClient.isConfigured(),
       mercury_configured: mercuryClient.isConfigured(),
       outlayer_configured: Boolean(process.env.OUTLAYER_PAYMENT_KEY),
       account_id: stateResult.state.account_id,
