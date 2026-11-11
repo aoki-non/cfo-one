@@ -198,6 +198,7 @@ export class AirwallexClient {
     const payload = {
       request_id: params.requestId,
       beneficiary_id: params.beneficiaryId,
+      source_currency: params.currency || 'USD',
       transfer_amount: params.amount,
       transfer_currency: params.currency || 'USD',
       transfer_method: 'LOCAL',
