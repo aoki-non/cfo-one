@@ -1,0 +1,355 @@
+{
+  "account_id": "mercury_act_9019283",
+  "balance_usd": 48250.00,
+  "budget": {
+    "monthly_limit_usd": 3500.00,
+    "spent_or_pending_usd": 1420.00,
+    "remaining_usd": 2080.00
+  },
+  "policy": {
+    "max_payment_usd": 1000.00,
+    "monthly_limit_usd": 3500.00,
+    "payment_methods": ["ach"],
+    "allowed_recipients": [
+      "rec_vercel_01",
+      "rec_aws_02",
+      "rec_figma_03",
+      "rec_openai_04",
+      "rec_alex_05",
+      "rec_cpa_06"
+    ],
+    "rules": [
+      {
+        "when": {
+          "op": "pay_invoice",
+          "min_usd": 300.00,
+          "max_usd": 1000.00
+        },
+        "then": "ask"
+      },
+      {
+        "when": {
+          "op": "pay_invoice",
+          "payee": "new"
+        },
+        "then": "ask"
+      }
+    ],
+    "sandbox": true
+  },
+  "recipients": [
+    {
+      "id": "rec_vercel_01",
+      "name": "Vercel Inc",
+      "routing_number": "121000358",
+      "account_number_last4": "4419",
+      "preferred_payment_method": "ach",
+      "created_at": "2026-01-15T10:00:00Z"
+    },
+    {
+      "id": "rec_aws_02",
+      "name": "Amazon Web Services",
+      "routing_number": "021000021",
+      "account_number_last4": "8821",
+      "preferred_payment_method": "ach",
+      "created_at": "2026-01-15T10:00:00Z"
+    },
+    {
+      "id": "rec_figma_03",
+      "name": "Figma Inc",
+      "routing_number": "121000358",
+      "account_number_last4": "1104",
+      "preferred_payment_method": "ach",
+      "created_at": "2026-02-01T10:00:00Z"
+    },
+    {
+      "id": "rec_openai_04",
+      "name": "OpenAI LLC",
+      "routing_number": "121000358",
+      "account_number_last4": "9021",
+      "preferred_payment_method": "ach",
+      "created_at": "2026-02-10T10:00:00Z"
+    },
+    {
+      "id": "rec_alex_05",
+      "name": "Alex Rivera",
+      "routing_number": "026009593",
+      "account_number_last4": "3392",
+      "preferred_payment_method": "ach",
+      "created_at": "2026-03-01T10:00:00Z"
+    },
+    {
+      "id": "rec_cpa_06",
+      "name": "Summit Legal LLP",
+      "routing_number": "021000021",
+      "account_number_last4": "7710",
+      "preferred_payment_method": "ach",
+      "created_at": "2026-06-01T10:00:00Z"
+    }
+  ],
+  "recent_transactions": [
+    {
+      "id": "tx_v_01",
+      "recipient_id": "rec_vercel_01",
+      "recipient_name": "Vercel Inc",
+      "amount_usd": 42.00,
+      "date": "2026-05-15",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_v_02",
+      "recipient_id": "rec_vercel_01",
+      "recipient_name": "Vercel Inc",
+      "amount_usd": 40.00,
+      "date": "2026-06-15",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_v_03",
+      "recipient_id": "rec_vercel_01",
+      "recipient_name": "Vercel Inc",
+      "amount_usd": 42.00,
+      "date": "2026-07-15",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_v_04",
+      "recipient_id": "rec_vercel_01",
+      "recipient_name": "Vercel Inc",
+      "amount_usd": 45.00,
+      "date": "2026-08-15",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_v_05",
+      "recipient_id": "rec_vercel_01",
+      "recipient_name": "Vercel Inc",
+      "amount_usd": 42.00,
+      "date": "2026-09-15",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_v_06",
+      "recipient_id": "rec_vercel_01",
+      "recipient_name": "Vercel Inc",
+      "amount_usd": 42.00,
+      "date": "2026-10-15",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_a_01",
+      "recipient_id": "rec_aws_02",
+      "recipient_name": "Amazon Web Services",
+      "amount_usd": 84.20,
+      "date": "2026-06-28",
+      "status": "sent",
+      "payment_method": "ach",
+      "reference_invoice_number": "INV-AWS-8820"
+    },
+    {
+      "id": "tx_ar_split_00",
+      "recipient_id": "rec_alex_05",
+      "recipient_name": "Alex Rivera",
+      "amount_usd": 145.00,
+      "date": "2026-11-09",
+      "status": "sent",
+      "payment_method": "ach",
+      "reference_invoice_number": "INV-AR-SPLIT-00"
+    },
+    {
+      "id": "tx_a_02",
+      "recipient_id": "rec_aws_02",
+      "recipient_name": "Amazon Web Services",
+      "amount_usd": 88.50,
+      "date": "2026-07-28",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_a_03",
+      "recipient_id": "rec_aws_02",
+      "recipient_name": "Amazon Web Services",
+      "amount_usd": 89.10,
+      "date": "2026-08-28",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_a_04",
+      "recipient_id": "rec_aws_02",
+      "recipient_name": "Amazon Web Services",
+      "amount_usd": 87.00,
+      "date": "2026-09-28",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_a_05",
+      "recipient_id": "rec_aws_02",
+      "recipient_name": "Amazon Web Services",
+      "amount_usd": 91.30,
+      "date": "2026-10-28",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_f_01",
+      "recipient_id": "rec_figma_03",
+      "recipient_name": "Figma Inc",
+      "amount_usd": 45.00,
+      "date": "2026-07-05",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_f_02",
+      "recipient_id": "rec_figma_03",
+      "recipient_name": "Figma Inc",
+      "amount_usd": 45.00,
+      "date": "2026-08-05",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_f_03",
+      "recipient_id": "rec_figma_03",
+      "recipient_name": "Figma Inc",
+      "amount_usd": 45.00,
+      "date": "2026-09-05",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_f_04",
+      "recipient_id": "rec_figma_03",
+      "recipient_name": "Figma Inc",
+      "amount_usd": 45.00,
+      "date": "2026-10-05",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_o_01",
+      "recipient_id": "rec_openai_04",
+      "recipient_name": "OpenAI LLC",
+      "amount_usd": 115.00,
+      "date": "2026-07-12",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_o_02",
+      "recipient_id": "rec_openai_04",
+      "recipient_name": "OpenAI LLC",
+      "amount_usd": 120.00,
+      "date": "2026-08-12",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_o_03",
+      "recipient_id": "rec_openai_04",
+      "recipient_name": "OpenAI LLC",
+      "amount_usd": 122.50,
+      "date": "2026-09-12",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_o_04",
+      "recipient_id": "rec_openai_04",
+      "recipient_name": "OpenAI LLC",
+      "amount_usd": 118.00,
+      "date": "2026-10-12",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_al_01",
+      "recipient_id": "rec_alex_05",
+      "recipient_name": "Alex Rivera",
+      "amount_usd": 150.00,
+      "date": "2026-09-01",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_al_02",
+      "recipient_id": "rec_alex_05",
+      "recipient_name": "Alex Rivera",
+      "amount_usd": 150.00,
+      "date": "2026-09-08",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_al_03",
+      "recipient_id": "rec_alex_05",
+      "recipient_name": "Alex Rivera",
+      "amount_usd": 150.00,
+      "date": "2026-09-15",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_al_04",
+      "recipient_id": "rec_alex_05",
+      "recipient_name": "Alex Rivera",
+      "amount_usd": 150.00,
+      "date": "2026-09-22",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_al_05",
+      "recipient_id": "rec_alex_05",
+      "recipient_name": "Alex Rivera",
+      "amount_usd": 150.00,
+      "date": "2026-09-29",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_al_06",
+      "recipient_id": "rec_alex_05",
+      "recipient_name": "Alex Rivera",
+      "amount_usd": 150.00,
+      "date": "2026-10-06",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_al_07",
+      "recipient_id": "rec_alex_05",
+      "recipient_name": "Alex Rivera",
+      "amount_usd": 150.00,
+      "date": "2026-10-13",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_al_08",
+      "recipient_id": "rec_alex_05",
+      "recipient_name": "Alex Rivera",
+      "amount_usd": 150.00,
+      "date": "2026-10-20",
+      "status": "sent",
+      "payment_method": "ach"
+    },
+    {
+      "id": "tx_cpa_01",
+      "recipient_id": "rec_cpa_06",
+      "recipient_name": "Summit Legal LLP",
+      "amount_usd": 850.00,
+      "date": "2026-06-15",
+      "status": "sent",
+      "payment_method": "ach"
+    }
+  ]
+}

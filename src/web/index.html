@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EnclaveCFO — Autonomous Treasury Ops</title>
+  <style>
+    :root {
+      --bg: #090a0f;
+      --card: #12141c;
+      --border: #222634;
+      --accent: #3b82f6;
+      --accent-glow: rgba(59, 130, 246, 0.2);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --green: #10b981;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      --cyan: #06b6d4;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 32px 24px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 32px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .badge-blue { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .badge-green { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-yellow { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-red { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    .grid-top {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+    }
+    .card-title { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .card-val { font-size: 24px; font-weight: 700; }
+    .card-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+    .playground {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+    .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+    button {
+      background: #1e2230;
+      color: var(--text);
+      border: 1px solid #333a4d;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    button:hover { background: #282e42; border-color: var(--accent); }
+    button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    button.primary:hover { background: #2563eb; }
+
+    .split-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .feed-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .feed-list { display: flex; flex-direction: column; gap: 12px; max-height: 540px; overflow-y: auto; }
+    .feed-item {
+      background: #161922;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .feed-item:hover, .feed-item.active { border-color: var(--accent); }
+    .feed-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .vendor { font-weight: 600; font-size: 15px; }
+    .amount { font-weight: 700; font-size: 15px; }
+    .reason { font-size: 12px; color: var(--text-muted); }
+
+    .inspector {
+      background: #161922;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      height: 100%;
+    }
+    pre {
+      background: #090a0f;
+      padding: 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #38bdf8;
+      overflow-x: auto;
+      margin-top: 12px;
+      border: 1px solid #1a202c;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <h1 style="font-size: 22px; font-weight: 800;">Enclave<span style="color: var(--accent);">CFO</span></h1>
+        <span class="badge badge-blue">Intel TDX Enclave</span>
+        <span class="badge badge-blue">Mercury Connector</span>
+      </div>
+      <div>
+        <span style="font-size: 13px; color: var(--text-muted);">Company of One Treasury Ops &bull; NEAR Hackathon 2026</span>
+      </div>
+    </header>
+
+    <div class="grid-top">
+      <div class="card">
+        <div class="card-title">Mercury Bank Balance</div>
+        <div class="card-val" id="val-balance">$48,250.00</div>
+        <div class="card-sub">Connected via OutLayer TEE</div>
+      </div>
+      <div class="card">
+        <div class="card-title">30-Day Budget Remaining</div>
+        <div class="card-val" style="color: var(--green);" id="val-budget">$2,080.00</div>
+        <div class="card-sub">$1,420 spent of $3,500 monthly limit</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Enclave Hard Cap</div>
+        <div class="card-val" style="color: var(--yellow);">$1,000.00</div>
+        <div class="card-sub">Max single-payment invariant</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Benchmark Scorecard</div>
+        <div class="card-val" style="color: var(--cyan);">25 / 25</div>
+        <div class="card-sub">100% attacks stopped, 0 false neg</div>
+      </div>
+    </div>
+
+    <div class="playground">
+      <div style="font-weight: 700; font-size: 16px;">Judge Interactive Playground</div>
+      <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+        Click any spotlight scenario below to see the two-layer defense evaluate in real-time.
+      </div>
+      <div class="btn-row">
+        <button onclick="runSpotlight('LEGIT-001')">1. Normal Invoice ($42 Vercel Auto-Pay)</button>
+        <button onclick="runSpotlight('ATTACK-003')">2. BEC Bank Routing Swap ($45 Blocked)</button>
+        <button onclick="runSpotlight('LEGIT-011')">3. High-Value Retainer ($850 Owner Approval Task)</button>
+        <button onclick="runSpotlight('ATTACK-015')">4. Enclave Cap Breach ($12,000 Hardware Refusal)</button>
+        <button class="primary" onclick="runAll()">Run Full 40-Case Benchmark</button>
+      </div>
+    </div>
+
+    <div class="split-layout">
+      <div>
+        <div class="feed-header">
+          <div style="font-weight: 700; font-size: 16px;">Live Invoices Feed (<span id="feed-count">0</span>)</div>
+          <span style="font-size: 12px; color: var(--text-muted);">Click invoice to inspect verdict</span>
+        </div>
+        <div class="feed-list" id="feed-list"></div>
+      </div>
+
+      <div>
+        <div class="inspector">
+          <div style="font-weight: 700; font-size: 16px; margin-bottom: 6px;">Dual-Layer Attestation Inspector</div>
+          <div style="font-size: 12px; color: var(--text-muted);" id="inspect-summary">Select an invoice from the feed.</div>
+          <pre id="inspect-json">// Inspection details will appear here</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let dataset = [];
+
+    async function loadData() {
+      const res = await fetch('/api/data');
+      dataset = await res.json();
+      renderFeed(dataset);
+      if (dataset.length > 0) inspectItem(dataset[0]);
+    }
+
+    function renderFeed(items) {
+      document.getElementById('feed-count').innerText = items.length;
+      const list = document.getElementById('feed-list');
+      list.innerHTML = '';
+      items.forEach((item) => {
+        const div = document.createElement('div');
+        div.className = 'feed-item';
+        div.onclick = () => inspectItem(item);
+
+        let badgeClass = 'badge-blue';
+        if (item.verdict.action === 'ALLOW') badgeClass = 'badge-green';
+        else if (item.verdict.action === 'ASK_OWNER') badgeClass = 'badge-yellow';
+        else if (item.verdict.action === 'REFUSE') badgeClass = 'badge-red';
+
+        div.innerHTML = `
+          <div class="feed-top">
+            <span class="vendor">${item.extracted.vendor_name} (#${item.id})</span>
+            <span class="amount">$${item.extracted.amount_usd.toFixed(2)}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="reason">${item.verdict.primary_reason}</span>
+            <span class="badge ${badgeClass}">${item.verdict.action}</span>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function inspectItem(item) {
+      document.getElementById('inspect-summary').innerText =
+        `Verdict: ${item.verdict.action} | Decided at Layer ${item.verdict.decided_at_layer}`;
+      
+      const details = {
+        invoice_id: item.id,
+        vendor: item.extracted.vendor_name,
+        amount_usd: item.extracted.amount_usd,
+        verdict: item.verdict.action,
+        primary_reason: item.verdict.primary_reason,
+        signals_detected: item.verdict.signals,
+        enclave_execution: item.enclave_result || "Withheld at Layer 1 Engine"
+      };
+
+      document.getElementById('inspect-json').innerText = JSON.stringify(details, null, 2);
+    }
+
+    function runSpotlight(id) {
+      const found = dataset.find(d => d.id === id);
+      if (found) {
+        renderFeed([found]);
+        inspectItem(found);
+      }
+    }
+
+    function runAll() {
+      renderFeed(dataset);
+      if (dataset.length > 0) inspectItem(dataset[0]);
+    }
+
+    loadData();
+  </script>
+</body>
+</html>

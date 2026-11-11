@@ -1,0 +1,24 @@
+{
+  "call_id": "call_outlayer_task_771829",
+  "status": "completed",
+  "compute_cost": 1050,
+  "time_ms": 142,
+  "attestation_url": "https://api.outlayer.ai/attestation/intel-tdx-quote-0x4f8812cbb891",
+  "output": {
+    "success": true,
+    "operation": "pay_invoice",
+    "status": "awaiting_owner",
+    "task_id": "task_mrc_881923",
+    "task_hash": "sha256:d8a291f09bb1082ce4771249b5c01991823abf10928a",
+    "link": "https://app.outlayer.ai/inbox/task_mrc_881923",
+    "output": {
+      "message": "Payment of $850.00 to Summit Legal LLP matches owner rule 1 ('min_usd: 300, max_usd: 1000' -> ask). Task queued for owner wallet signature in OutLayer Inbox.",
+      "prepared_payment": {
+        "amount_usd": 850.00,
+        "recipient_id": "rec_cpa_06",
+        "payment_method": "ach",
+        "rule_matched": 1
+      }
+    }
+  }
+}

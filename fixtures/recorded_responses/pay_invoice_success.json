@@ -1,0 +1,21 @@
+{
+  "call_id": "call_outlayer_live_ach_981249",
+  "status": "completed",
+  "compute_cost": 1100,
+  "time_ms": 194,
+  "attestation_url": "https://api.outlayer.ai/attestation/intel-tdx-quote-0x8a92fbc19028",
+  "output": {
+    "success": true,
+    "operation": "pay_invoice",
+    "output": {
+      "transaction_id": "mercury_tx_99182348",
+      "status": "sent",
+      "amount_usd": 42.00,
+      "payment_method": "ach",
+      "recipient_id": "rec_vercel_01",
+      "note": "[outlayer] Routine monthly subscription payment",
+      "idempotency_key": "idemp_inv_vercel_2026_11",
+      "created_at": "2026-11-11T13:42:10Z"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "call_id": "call_outlayer_refusal_119283",
+  "status": "completed",
+  "compute_cost": 1000,
+  "time_ms": 110,
+  "attestation_url": "https://api.outlayer.ai/attestation/intel-tdx-quote-0x991823bbac10",
+  "output": {
+    "success": false,
+    "operation": "pay_invoice",
+    "error": "Payment of $12000.00 exceeds the per-payment limit of $1000.00 set in MERCURY_POLICY."
+  }
+}
