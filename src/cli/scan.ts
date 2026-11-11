@@ -1,3 +1,4 @@
+import '../config/env.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import { InvoiceExtractor } from '../extraction/extractor.js';

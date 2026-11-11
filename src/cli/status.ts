@@ -1,3 +1,4 @@
+import '../config/env.js';
 import { MercuryClient } from '../connector/mercuryClient.js';
 import { AirwallexClient } from '../connector/airwallexClient.js';
 
@@ -90,12 +91,17 @@ async function checkStatus() {
     console.log(`   Account: ${secretsAcct}\n`);
   }
 
-  // 4. Private LLM Inference (NEAR AI Cloud / OpenAI)
-  console.log(`${BOLD}4. Extraction Engine (Private TEE LLM Inference)${RESET}`);
+  // 4. Private LLM Inference (Meta Model API / NEAR AI Cloud / OpenAI)
+  console.log(`${BOLD}4. Extraction Engine (LLM Inference)${RESET}`);
+  const metaKey = process.env.META_MODEL_API_KEY;
   const nearAiKey = process.env.NEAR_AI_API_KEY;
   const openaiKey = process.env.OPENAI_API_KEY;
 
-  if (nearAiKey) {
+  if (metaKey) {
+    console.log(`   Status:  ${GREEN}[ACTIVE: META MODEL API]${RESET}`);
+    console.log(`   Base:    ${process.env.META_MODEL_API_BASE || 'https://api.meta.ai/v1'}`);
+    console.log(`   Model:   ${process.env.META_MODEL_SPARK || 'muse-spark-1.3'}\n`);
+  } else if (nearAiKey) {
     console.log(`   Status:  ${GREEN}[ACTIVE: NEAR AI CLOUD TEE]${RESET}`);
     console.log(`   Model:   meta-llama/Meta-Llama-3.1-70B-Instruct inside confidential enclave\n`);
   } else if (openaiKey) {

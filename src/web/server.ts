@@ -1,3 +1,4 @@
+import '../config/env.js';
 import * as http from 'http';
 import * as fs from 'fs';
 import * as path from 'path';

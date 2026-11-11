@@ -55,7 +55,7 @@ export class MercuryClient {
   private baseUrl: string;
 
   constructor(options: MercuryClientOptions = {}) {
-    this.apiKey = options.apiKey || process.env.MERCURY_API_KEY;
+    this.apiKey = options.apiKey !== undefined ? options.apiKey : process.env.MERCURY_API_KEY;
     this.baseUrl = (options.baseUrl || process.env.MERCURY_API_URL || 'https://api.mercury.com/api/v1').replace(/\/+$/, '');
   }
 

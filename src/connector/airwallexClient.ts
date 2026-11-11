@@ -51,8 +51,8 @@ export class AirwallexClient {
   private tokenExpiresAt: number = 0;
 
   constructor(options: AirwallexClientOptions = {}) {
-    this.clientId = options.clientId || process.env.AIRWALLEX_CLIENT_ID;
-    this.apiKey = options.apiKey || process.env.AIRWALLEX_API_KEY;
+    this.clientId = options.clientId !== undefined ? options.clientId : process.env.AIRWALLEX_CLIENT_ID;
+    this.apiKey = options.apiKey !== undefined ? options.apiKey : process.env.AIRWALLEX_API_KEY;
     const isDemo = options.isDemo !== undefined ? options.isDemo : (process.env.AIRWALLEX_ENV !== 'production');
     const defaultHost = isDemo ? 'https://api-demo.airwallex.com/api/v1' : 'https://api.airwallex.com/api/v1';
     this.baseUrl = (options.baseUrl || process.env.AIRWALLEX_API_URL || defaultHost).replace(/\/+$/, '');
@@ -198,10 +198,11 @@ export class AirwallexClient {
     const payload = {
       request_id: params.requestId,
       beneficiary_id: params.beneficiaryId,
-      amount: params.amount,
-      currency: params.currency || 'USD',
+      transfer_amount: params.amount,
+      transfer_currency: params.currency || 'USD',
+      transfer_method: 'LOCAL',
       reason: 'Invoice settlement',
-      reference: params.reference || 'CFO-One Invoice Payment'
+      reference: (params.reference || 'CFO-One Invoice Payment').slice(0, 35)
     };
 
     const res = await this.request<any>('/transfers/create', {
@@ -314,3 +315,4 @@ export class AirwallexClient {
     };
   }
 }
+

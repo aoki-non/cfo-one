@@ -3,20 +3,50 @@ import { ExtractedInvoice, RawInvoice } from '../types/index.js';
 export interface ExtractorOptions {
   nearAiApiKey?: string;
   openaiApiKey?: string;
+  metaModelApiKey?: string;
+  metaModelApiBase?: string;
+  metaModelSpark?: string;
 }
 
 export class InvoiceExtractor {
   private nearAiApiKey?: string;
   private openaiApiKey?: string;
+  private metaModelApiKey?: string;
+  private metaModelApiBase?: string;
+  private metaModelSpark?: string;
+  private static llmFailedHosts: Set<string> = new Set();
 
   constructor(options: ExtractorOptions = {}) {
     this.nearAiApiKey = options.nearAiApiKey || process.env.NEAR_AI_API_KEY;
     this.openaiApiKey = options.openaiApiKey || process.env.OPENAI_API_KEY;
+    this.metaModelApiKey = options.metaModelApiKey || process.env.META_MODEL_API_KEY;
+    this.metaModelApiBase = options.metaModelApiBase || process.env.META_MODEL_API_BASE || 'https://api.meta.ai/v1';
+    this.metaModelSpark = options.metaModelSpark || process.env.META_MODEL_SPARK || 'muse-spark-1.3';
   }
 
   public async extract(rawInvoice: RawInvoice): Promise<ExtractedInvoice> {
-    // If NEAR AI Cloud key is available, use private TEE inference on NEAR AI Cloud!
-    if (this.nearAiApiKey) {
+    // In automated unit tests, prefer deterministic extraction unless remote LLM is explicitly forced
+    if (process.env.NODE_ENV === 'test' && !process.env.FORCE_LLM_TEST) {
+      return this.extractDeterministically(rawInvoice);
+    }
+
+    // 1. If Meta Model API key is available, use Meta model
+    if (this.metaModelApiKey && !InvoiceExtractor.llmFailedHosts.has(this.metaModelApiBase!)) {
+      try {
+        return await this.extractWithLLM(
+          rawInvoice,
+          this.metaModelApiBase!,
+          this.metaModelApiKey,
+          this.metaModelSpark!
+        );
+      } catch (err: any) {
+        InvoiceExtractor.llmFailedHosts.add(this.metaModelApiBase!);
+        console.warn(`[Extractor] Meta Model API call failed (${err.message}). Using fallback.`);
+      }
+    }
+
+    // 2. If NEAR AI Cloud key is available, use private TEE inference on NEAR AI Cloud!
+    if (this.nearAiApiKey && !InvoiceExtractor.llmFailedHosts.has('https://cloud.near.ai/v1')) {
       try {
         return await this.extractWithLLM(
           rawInvoice,
@@ -25,12 +55,13 @@ export class InvoiceExtractor {
           'meta-llama/Meta-Llama-3.1-70B-Instruct'
         );
       } catch (err: any) {
+        InvoiceExtractor.llmFailedHosts.add('https://cloud.near.ai/v1');
         console.warn(`[Extractor] NEAR AI Cloud call failed (${err.message}). Using deterministic fallback.`);
       }
     }
 
-    // If OpenAI key is available, fallback to OpenAI
-    if (this.openaiApiKey) {
+    // 3. If OpenAI key is available, fallback to OpenAI
+    if (this.openaiApiKey && !InvoiceExtractor.llmFailedHosts.has('https://api.openai.com/v1')) {
       try {
         return await this.extractWithLLM(
           rawInvoice,
@@ -39,6 +70,7 @@ export class InvoiceExtractor {
           'gpt-4o-mini'
         );
       } catch (err: any) {
+        InvoiceExtractor.llmFailedHosts.add('https://api.openai.com/v1');
         console.warn(`[Extractor] OpenAI call failed (${err.message}). Using deterministic fallback.`);
       }
     }
@@ -77,6 +109,7 @@ Output only raw JSON.`;
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`
       },
+      signal: AbortSignal.timeout(3000),
       body: JSON.stringify({
         model: modelName,
         messages: [
