@@ -44,22 +44,29 @@ async function getEvaluatedData() {
 
     let enclave_result = null;
     if (verdict.action === 'ALLOW' || verdict.action === 'ASK_OWNER') {
-      const exec = await outlayer.executePayment(verdict, state.policy);
-      enclave_result = {
-        status: exec.output.status || (exec.output.success ? 'executed' : 'failed'),
-        transaction_id: exec.output.output?.transaction_id || exec.output.transaction_id,
-        task_id: exec.output.task_id,
-        link: exec.output.link,
-        attestation_url: exec.attestation_url
-      };
-      if (verdict.action === 'ALLOW') {
-        processed.push({
-          invoice_number: extracted.invoice_number,
-          vendor_name: extracted.vendor_name,
-          recipient_id: verdict.context.matched_recipient_id,
-          amount_usd: extracted.amount_usd,
-          processed_at: new Date().toISOString()
-        });
+      try {
+        const exec = await outlayer.executePayment(verdict, state.policy);
+        enclave_result = {
+          status: exec.output.status || (exec.output.success ? 'executed' : 'failed'),
+          transaction_id: exec.output.output?.transaction_id || exec.output.transaction_id,
+          task_id: exec.output.task_id,
+          link: exec.output.link,
+          attestation_url: exec.attestation_url
+        };
+        if (verdict.action === 'ALLOW') {
+          processed.push({
+            invoice_number: extracted.invoice_number,
+            vendor_name: extracted.vendor_name,
+            recipient_id: verdict.context.matched_recipient_id,
+            amount_usd: extracted.amount_usd,
+            processed_at: new Date().toISOString()
+          });
+        }
+      } catch (err: any) {
+        enclave_result = {
+          status: 'evaluation_error',
+          error: err.message
+        };
       }
     } else if (item.id === 'ATTACK-015') {
       // Show simulated enclave hardware refusal

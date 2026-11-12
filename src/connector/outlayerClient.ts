@@ -59,6 +59,12 @@ export class OutLayerMercuryClient {
     options: { accountId?: string } = {}
   ): Promise<OutLayerExecutionResult> {
     if (!verdict.outlayer_payload) {
+      if (verdict.action === 'ASK_OWNER') {
+        return this.loadFixture('awaiting_owner_task.json', {
+          amount_usd: verdict.amount_usd,
+          recipient_id: 'pending_vendor_onboarding'
+        });
+      }
       throw new Error(`Verdict has no OutLayer payload. Action was: ${verdict.action}`);
     }
 
@@ -72,17 +78,20 @@ export class OutLayerMercuryClient {
       });
     }
 
-    // Check 2: Enclave allowed recipients
-    if (!policy.allowed_recipients.includes(payload.recipient_id)) {
-      return this.loadFixture('enclave_unauthorized_payee.json', {
-        error: `Recipient ${payload.recipient_id} is not in the policy's allowed recipients.`
+    const isNewPayee = !policy.allowed_recipients.includes(payload.recipient_id);
+
+    // Check 2: If Layer 1 decided ASK_OWNER, queue awaiting_owner task in OutLayer Inbox
+    if (verdict.action === 'ASK_OWNER') {
+      return this.loadFixture('awaiting_owner_task.json', {
+        amount_usd: payload.amount_usd,
+        recipient_id: payload.recipient_id
       });
     }
 
-    // Check 3: Enclave rules (e.g. min_usd: 300, max_usd: 1000 -> ask)
+    // Check 3: Enclave rules (e.g. min_usd: 300, max_usd: 1000 -> ask, or payee: 'new' -> ask)
     const matchingRule = policy.rules.find((r) => {
       if (r.when.op !== 'pay_invoice') return false;
-      if (r.when.payee === 'new') return false;
+      if (r.when.payee === 'new' && isNewPayee) return true;
 
       if (r.when.min_usd !== undefined || r.when.max_usd !== undefined) {
         const min = r.when.min_usd ?? 0;
@@ -96,6 +105,13 @@ export class OutLayerMercuryClient {
       return this.loadFixture('awaiting_owner_task.json', {
         amount_usd: payload.amount_usd,
         recipient_id: payload.recipient_id
+      });
+    }
+
+    // Check 4: Enclave allowed recipients for automated auto-pay execution
+    if (isNewPayee) {
+      return this.loadFixture('enclave_unauthorized_payee.json', {
+        error: `Recipient ${payload.recipient_id} is not in the policy's allowed recipients.`
       });
     }
 
