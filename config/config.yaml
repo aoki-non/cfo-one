@@ -1,0 +1,18 @@
+business:
+  name: CFO-One Autonomous Clearance & Treasury Shop
+  tagline: Confidential TEE Invoice Verification & Cross-Chain Treasury Clearance
+  agent_near_account: longdata4360.testnet
+  custody_mode: outlayer_tdx_enclave
+  network: testnet
+commercial_rules:
+  min_audit_fee_usd: 10
+  max_inference_daily_usd: 25
+  max_single_payment_usd: 1000
+  monthly_budget_usd: 3500
+revenue_splits:
+  retained_treasury_percent: 70
+  contributor_dividend_percent: 20
+  liquidity_reserve_percent: 10
+  contributor_account: contributors.testnet
+emergency_controls:
+  kill_switch: false

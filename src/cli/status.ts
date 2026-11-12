@@ -1,6 +1,7 @@
 import '../config/env.js';
 import { MercuryClient } from '../connector/mercuryClient.js';
 import { AirwallexClient } from '../connector/airwallexClient.js';
+import { ConstraintsManager } from '../config/constraints.js';
 
 const BOLD = '\x1b[1m';
 const RESET = '\x1b[0m';
@@ -112,10 +113,23 @@ async function checkStatus() {
     console.log(`   Details: Credential-free local parsing for CI & evaluation.\n`);
   }
 
+  // 5. Autonomous Business Constraints (config/config.yaml)
+  console.log(`${BOLD}5. Autonomous Business Constraints (config/config.yaml)${RESET}`);
+  const constraints = ConstraintsManager.getConstraints();
+  console.log(`   Business:        ${constraints.business.name}`);
+  console.log(`   Agent Account:   ${GREEN}${constraints.business.agent_near_account}${RESET}`);
+  console.log(`   Min Audit Fee:   $${constraints.commercial_rules.min_audit_fee_usd.toFixed(2)}`);
+  console.log(`   Daily AI Cap:    $${constraints.commercial_rules.max_inference_daily_usd.toFixed(2)}/day`);
+  console.log(`   Revenue Splits:  ${constraints.revenue_splits.retained_treasury_percent}% Treasury | ${GREEN}${constraints.revenue_splits.contributor_dividend_percent}% Contributors${RESET} (${constraints.revenue_splits.contributor_account}) | ${constraints.revenue_splits.liquidity_reserve_percent}% Reserve`);
+  console.log(`   Kill Switch:     ${constraints.emergency_controls.kill_switch ? `${RED}[ACTIVATED - ALL OUTFLOWS FROZEN]${RESET}` : `${GREEN}[DISARMED - AUTONOMOUS]${RESET}`}\n`);
+
   console.log(`${BOLD}Summary:${RESET}`);
-  console.log(`To run the live pipeline against your own documents or real sandbox:`);
+  console.log(`To run the 2-minute autonomous commercial loop (Track 04):`);
+  console.log(`  ${GREEN}$ npm run demo:loop${RESET}  ${DIM}(runs sale -> intent settle -> dividend split -> TEE proof in < 2 mins)${RESET}`);
+  console.log(`To run invoice risk scanner:`);
   console.log(`  ${DIM}$ npm run scan -- --text "Invoice INV-01 from Vercel for $42.00"${RESET}`);
-  console.log(`  ${DIM}$ npm run web  (opens web dashboard with live invoice tester)${RESET}\n`);
+  console.log(`To open the Web Cockpit with Public Transparency Ledger:`);
+  console.log(`  ${DIM}$ npm run web  (http://localhost:3000)${RESET}\n`);
 }
 
 checkStatus().catch(console.error);

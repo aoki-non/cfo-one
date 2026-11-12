@@ -187,35 +187,87 @@ Tested against **40 real-world invoice vectors**:
 ```
 cfo-one/
 ├── .env.example                       # Environment configuration guide
+### 3. Track 04: Autonomous Business ("The Company of One, or None")
+
+CFO-One operates as a self-sustaining **Autonomous Clearance & Treasury Shop**:
+- **Commercial Product**: B2B Confidential TEE Invoice Verification & Cross-Chain Treasury Clearance for DAOs, startups, and autonomous AI agents.
+- **Sales Inflow (NEAR Intents / 1Click API)**: Clients pay for clearance fees in *any* token (Base USDC, Solana SOL, Ethereum ETH, or NEAR). Cross-chain solvers settle funds directly into CFO-One's treasury account.
+- **Founder Governance (`config/config.yaml`)**: The human sets rules in one YAML file:
+  - Minimum audit fee ($10.00)
+  - Daily AI inference compute ceiling ($25.00/day)
+  - Enclave single-payment cap ($1,000.00)
+  - Automated revenue splits: 70% Retained Treasury, 20% Contributor Dividends, 10% Reserve
+  - Emergency hardware kill switch (freezes all payouts instantly inside TEE)
+- **Automated Revenue Sharing**: 20% of every clearance sale is programmatically calculated and dispatched to `contributors.testnet` on NEAR.
+- **Autonomous Procurement**: The agent buys its own extraction inference from NEAR AI Cloud and pays operational bills (Airwallex fiat ACH/wire) strictly within enclave limits.
+- **Public Transparency Ledger**: Live on-chain audit trail in the Web Cockpit logging every Sale, Contributor Dividend, AI Inference Expense, and Intel TDX attestation quote.
+
+```bash
+# Run the 2-minute autonomous commercial loop on NEAR Testnet:
+npm run demo:loop
+```
+
+---
+
+## 4. Quickstart & Commands
+
+```bash
+# 1. Check system connectivity (Airwallex Demo, NEAR Testnet, Founder Constraints)
+npm run status
+
+# 2. Run the 2-minute autonomous business loop (Track 04)
+npm run demo:loop
+
+# 3. Scan & evaluate an invoice from the CLI
+npm run scan -- --text "INVOICE #INV-01 Vendor: Vercel Amount: $42.00"
+
+# 4. Launch the Web Cockpit with Public Ledger & Kill Switch
+npm run web
+# Open http://localhost:3000
+
+# 5. Run the full test suite (16 tests, 2 suites)
+npm test
+```
+
+---
+
+## 5. Architecture & Codebase Map
+
+```
+cfo-one/
+├── config/
+│   └── config.yaml                    # Founder constraints, revenue splits & kill switch
 ├── fixtures/
-│   ├── mock_mercury_state.json        # Fallback Mercury account, recipients & policy
+│   ├── mock_mercury_state.json        # Fallback account, recipients & policy
 │   ├── invoices_dataset.json          # 40-case benchmark (15 legit, 15 open hostile, 10 held-out)
+│   ├── public_ledger.json             # Immutable public transparency ledger
 │   └── recorded_responses/            # Real Intel TDX attestation response envelopes
 ├── src/
-│   ├── types/index.ts                 # Full TypeScript domain schemas
-│   ├── engine/
-│   │   ├── baseline.ts                # Historical median ratio & thin history evaluation
-│   │   ├── duplicate.ts               # Exact, mutated, and ledger re-billing detection
-│   │   ├── bankDiff.ts                # Invoice bank routing/account diff vs Mercury records
-│   │   ├── velocityBudget.ts          # 30-day budget drain & 24h velocity checks
-│   │   ├── injection.ts               # Prompt injection & imperative instruction screening
-│   │   └── verdict.ts                 # Primary verdict aggregator (ALLOW, ASK_OWNER, REFUSE)
-│   ├── extraction/
-│   │   └── extractor.ts               # LLM extraction (NEAR AI Cloud / OpenAI / deterministic)
-│   ├── connector/
-│   │   ├── mercuryClient.ts           # Live Mercury REST API v1 Client (Sandbox & Production)
-│   │   ├── stateProvider.ts           # Live state synchronization & fallback manager
-│   │   └── outlayerClient.ts          # OutLayer Mercury connector client (Intel TDX on NEAR Testnet)
+│   ├── config/
+│   │   ├── env.ts                     # Multi-environment secret loader
+│   │   └── constraints.ts             # YAML constraints manager & kill switch handler
+│   ├── intents/
+│   │   └── oneClickClient.ts          # NEAR Intents / 1Click multi-chain payment solver
+│   ├── business/
+│   │   ├── revenueSplitter.ts         # Programmatic 70/20/10 dividend dispatcher
+│   │   └── inferenceBudget.ts         # Autonomous NEAR AI Cloud compute meter
+│   ├── chainSig/
+│   │   └── mpcSigner.ts               # NEAR Chain Signatures (v1.signer-prod.testnet)
+│   ├── ledger/
+│   │   └── publicLedger.ts            # Public transparency ledger audit engine
+│   ├── engine/                        # Dual-layer threat defense (BEC, budget, bankDiff)
+│   ├── extraction/                    # LLM invoice extraction & instruction screening
+│   ├── connector/                     # Airwallex Demo, Mercury API & OutLayer TEE Enclave
 │   ├── cli/
-│   │   ├── demo.ts                    # 15-second benchmark runner
-│   │   ├── scan.ts                    # Live invoice ingestion CLI (file or text)
+│   │   ├── demoLoop.ts                # 2-minute autonomous business loop (Track 04)
+│   │   ├── scan.ts                    # Live invoice ingestion CLI
 │   │   └── status.ts                  # System connectivity & credential auditor
 │   └── web/
-│       ├── index.html                 # Visual Cockpit & real invoice workbench
-│       └── server.ts                  # HTTP API server (/api/status, /api/evaluate, /api/data)
-├── tests/
-│   └── adversarial.test.ts            # Automated test suite
-└── package.json
+│       ├── index.html                 # Web Cockpit with Public Ledger & Kill Switch
+│       └── server.ts                  # Backend API server with /api/ledger, /api/kill-switch
+└── tests/
+    ├── adversarial.test.ts            # Security & threat benchmark tests
+    └── autonomous_business.test.ts    # Track 04 autonomous business test suite
 ```
 
 ## License

@@ -11,6 +11,11 @@ import { ProcessedInvoiceRecord } from '../engine/duplicate.js';
 import { StateProvider } from '../connector/stateProvider.js';
 import { MercuryClient } from '../connector/mercuryClient.js';
 import { AirwallexClient } from '../connector/airwallexClient.js';
+import { ConstraintsManager } from '../config/constraints.js';
+import { NearIntentsClient } from '../intents/oneClickClient.js';
+import { RevenueSplitter } from '../business/revenueSplitter.js';
+import { InferenceBudgetMeter } from '../business/inferenceBudget.js';
+import { PublicLedger } from '../ledger/publicLedger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -120,8 +125,11 @@ const server = http.createServer(async (req, res) => {
     res.end(html);
   } else if (req.url === '/api/status') {
     const stateResult = await StateProvider.getState();
+    const constraints = ConstraintsManager.getConstraints();
+    const inferenceStatus = InferenceBudgetMeter.getStatus();
     const statusData = {
       name: 'cfo-one',
+      business_name: constraints.business.name,
       mode: stateResult.source,
       airwallex_configured: airwallexClient.isConfigured(),
       mercury_configured: mercuryClient.isConfigured(),
@@ -130,10 +138,98 @@ const server = http.createServer(async (req, res) => {
       balance_usd: stateResult.state.balance_usd,
       budget: stateResult.state.budget,
       policy: stateResult.state.policy,
-      recipients: stateResult.state.recipients
+      recipients: stateResult.state.recipients,
+      constraints,
+      kill_switch: constraints.emergency_controls.kill_switch,
+      inference_budget: inferenceStatus
     };
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(statusData));
+  } else if (req.url === '/api/ledger') {
+    const entries = PublicLedger.getEntries();
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(entries));
+  } else if (req.url === '/api/kill-switch' && req.method === 'POST') {
+    let body = '';
+    req.on('data', (c) => { body += c; });
+    req.on('end', () => {
+      try {
+        const payload = JSON.parse(body || '{}');
+        const active = Boolean(payload.active);
+        const updated = ConstraintsManager.setKillSwitch(active);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, kill_switch: updated.emergency_controls.kill_switch }));
+      } catch (err: any) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+  } else if (req.url === '/api/intents/quote' && req.method === 'POST') {
+    let body = '';
+    req.on('data', (c) => { body += c; });
+    req.on('end', async () => {
+      try {
+        const payload = JSON.parse(body || '{}');
+        const intentsClient = new NearIntentsClient();
+        const quote = await intentsClient.createPaymentIntent({
+          originTokenSymbol: payload.token || 'USDC',
+          originChain: payload.chain || 'base',
+          amountUsd: Number(payload.amountUsd) || 25.0,
+          clientAddress: payload.clientAddress || '0xClient...901',
+          invoiceIdToClear: payload.invoiceId || 'INV-CUSTOM'
+        });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(quote));
+      } catch (err: any) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+  } else if (req.url === '/api/intents/settle' && req.method === 'POST') {
+    let body = '';
+    req.on('data', (c) => { body += c; });
+    req.on('end', async () => {
+      try {
+        const payload = JSON.parse(body || '{}');
+        const intentsClient = new NearIntentsClient();
+        const settlement = await intentsClient.settleIntent(payload.intent);
+
+        // Record sale in ledger
+        PublicLedger.recordEntry({
+          type: 'SALE_INFLOW',
+          amount_usd: settlement.amountUsd,
+          asset: `${payload.intent.originAsset.symbol} (${payload.intent.originAsset.blockchain})`,
+          counterparty: payload.intent.depositAddress,
+          description: `Invoice Clearance Purchase via NEAR Intents (${payload.intent.intentId})`,
+          status: 'SETTLED',
+          attestation_url: `https://testnet.nearblocks.io/txns/${settlement.txHash}`,
+          tx_hash: settlement.txHash
+        });
+
+        // Run automated dividend split
+        const split = await RevenueSplitter.executeSplit({
+          amountUsd: settlement.amountUsd,
+          saleId: payload.intent.intentId
+        });
+
+        PublicLedger.recordEntry({
+          type: 'REVENUE_SPLIT',
+          amount_usd: split.splits.contributor_dividend_usd,
+          asset: 'NEAR',
+          counterparty: split.contributor_account,
+          description: `Automated 20% dividend payout from sale ${payload.intent.intentId}`,
+          status: split.payout_status === 'DISPATCHED' ? 'DIVIDEND_PAID' : 'FROZEN_KILL_SWITCH',
+          attestation_url: split.attestation_url || 'https://api.outlayer.ai/attestation/intel-tdx',
+          tx_hash: split.near_payout_tx_hash
+        });
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, settlement, split }));
+      } catch (err: any) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
   } else if (req.url === '/api/data') {
     const data = await getEvaluatedData();
     res.writeHead(200, { 'Content-Type': 'application/json' });

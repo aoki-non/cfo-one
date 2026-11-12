@@ -237,7 +237,7 @@ export class AirwallexClient {
   }): Promise<{ id: string; name: string }> {
     const payload = {
       beneficiary: {
-        type: params.entityType || 'COMPANY',
+        entity_type: params.entityType || 'COMPANY',
         company_name: params.name,
         bank_details: {
           account_currency: params.currency || 'USD',
@@ -256,7 +256,7 @@ export class AirwallexClient {
         }
       },
       nick_name: params.name.slice(0, 30),
-      payment_methods: ['LOCAL']
+      transfer_methods: ['LOCAL']
     };
 
     const res = await this.request<any>('/beneficiaries/create', {
