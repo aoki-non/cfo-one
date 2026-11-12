@@ -108,3 +108,4 @@ export class PublicLedger {
     return newEntry;
   }
 }
+
