@@ -111,7 +111,13 @@ Memo: Monthly cloud hosting subscription`;
   console.log(`\n${BOLD}2. TREASURY STATE SYNC${RESET}`);
   const stateResult = await StateProvider.getState();
   const state = stateResult.state;
-  console.log(`   Mode:           ${stateResult.source === 'live_mercury' ? `${GREEN}[LIVE MERCURY API]${RESET}` : `${YELLOW}[SANDBOX FIXTURE]${RESET}`}`);
+  let modeBadge = `${YELLOW}[SANDBOX FIXTURE]${RESET}`;
+  if (stateResult.source === 'live_airwallex') {
+    modeBadge = `${GREEN}[LIVE AIRWALLEX DEMO API]${RESET}`;
+  } else if (stateResult.source === 'live_mercury') {
+    modeBadge = `${GREEN}[LIVE MERCURY API]${RESET}`;
+  }
+  console.log(`   Mode:           ${modeBadge}`);
   console.log(`   Account:        ${state.account_id} ($${state.balance_usd.toLocaleString()} balance)`);
   console.log(`   30-Day Budget:  $${state.budget.remaining_usd.toLocaleString()} remaining ($${state.budget.spent_or_pending_usd.toLocaleString()} spent)`);
   console.log(`   Enclave Limit:  $${state.policy.max_payment_usd.toFixed(2)} max per payment`);
@@ -147,8 +153,8 @@ Memo: Monthly cloud hosting subscription`;
       console.log(`   \n${DIM}Escalated to human owner. Transaction will NOT execute until cryptographic approval.${RESET}`);
     } else if (result.output.success) {
       console.log(`   Outcome:        ${GREEN}[PAYMENT INITIATED]${RESET}`);
-      console.log(`   Mercury Tx ID:  ${result.output.output?.transaction_id || result.output.transaction_id || 'tx_mercury_live'}`);
-      console.log(`   Dashboard:      ${result.attestation_url || 'https://app.mercury.com'}`);
+      console.log(`   Treasury Tx ID: ${result.output.output?.transaction_id || result.output.transaction_id || 'tx_treasury_live'}`);
+      console.log(`   Dashboard:      ${result.attestation_url || 'https://demo.airwallex.com'}`);
       console.log(`   \n${GREEN}Payment successfully processed through dual-layer verification!${RESET}`);
     } else {
       console.log(`   Outcome:        ${RED}[ENCLAVE HARDWARE REJECTION]${RESET}`);

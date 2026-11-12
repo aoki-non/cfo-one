@@ -45,7 +45,7 @@ export function evaluateDuplicates(
     signals.push({
       category: 'DUPLICATE_INVOICE',
       severity: 'CRITICAL',
-      description: `Prior Period Re-billing: Invoice #${invoice.invoice_number} was already paid on ${ledgerMatch.date} (Mercury Tx ID: ${ledgerMatch.id}).`,
+      description: `Prior Period Re-billing: Invoice #${invoice.invoice_number} was already paid on ${ledgerMatch.date} (Ledger Tx ID: ${ledgerMatch.id}).`,
       evidence: { invoice_number: invoice.invoice_number, prior_tx: ledgerMatch }
     });
     return signals;

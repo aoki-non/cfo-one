@@ -5,7 +5,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { evaluateInvoice } from '../engine/verdict.js';
 import { InvoiceExtractor } from '../extraction/extractor.js';
-import { RawInvoice } from '../types/index.js';
+import { RawInvoice, CFOVerdict } from '../types/index.js';
 import { OutLayerMercuryClient } from '../connector/outlayerClient.js';
 import { ProcessedInvoiceRecord } from '../engine/duplicate.js';
 import { StateProvider } from '../connector/stateProvider.js';
@@ -197,6 +197,112 @@ const server = http.createServer(async (req, res) => {
             enclave_result
           })
         );
+      } catch (err: any) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+  } else if (req.url === '/api/approve' && req.method === 'POST') {
+    let body = '';
+    req.on('data', (chunk) => { body += chunk; });
+    req.on('end', async () => {
+      try {
+        const payload = JSON.parse(body || '{}');
+        const invoiceId = payload.id;
+        const { state } = await StateProvider.getState();
+
+        // 1. Locate the item from dataset or request
+        const item = rawDataset.find((d: any) => d.id === invoiceId);
+        let extracted = item 
+          ? extractor.extractDeterministically({ id: item.id, filename: item.filename, content_text: item.raw_text })
+          : payload.extracted;
+
+        if (!extracted) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invoice not found to approve' }));
+          return;
+        }
+
+        // 2. Ensure recipient is onboarded / allowed
+        let recipient = state.recipients.find((r) => r.name.toLowerCase() === extracted.vendor_name.toLowerCase());
+        if (!recipient) {
+          let newRecipientId = `rec_onboarded_${Date.now().toString().slice(-6)}`;
+          
+          if (airwallexClient.isConfigured() && extracted.bank_details?.account_number_last4) {
+            try {
+              const onboarded = await airwallexClient.createBeneficiary({
+                name: extracted.vendor_name,
+                accountNumber: `10000000${extracted.bank_details.account_number_last4}`,
+                routingNumber: extracted.bank_details.routing_number || '121000358'
+              });
+              newRecipientId = onboarded.id;
+            } catch (err: any) {
+              console.warn(`[Airwallex] Onboarding in sandbox fallback: ${err.message}`);
+            }
+          }
+
+          recipient = {
+            id: newRecipientId,
+            name: extracted.vendor_name,
+            routing_number: extracted.bank_details?.routing_number || '121000358',
+            account_number_last4: extracted.bank_details?.account_number_last4 || '4419',
+            preferred_payment_method: 'ach',
+            created_at: new Date().toISOString()
+          };
+
+          state.recipients.push(recipient);
+          if (!state.policy.allowed_recipients.includes(recipient.id)) {
+            state.policy.allowed_recipients.push(recipient.id);
+          }
+        }
+
+        // 3. Build owner-approved verdict
+        const approvedVerdict: CFOVerdict = {
+          invoice_id: invoiceId || `INV-${Date.now()}`,
+          invoice_number: extracted.invoice_number,
+          vendor_name: extracted.vendor_name,
+          action: 'ALLOW',
+          decided_at_layer: 1,
+          primary_reason: `Owner manually approved payment and onboarded vendor "${extracted.vendor_name}".`,
+          amount_usd: extracted.amount_usd,
+          signals: [],
+          outlayer_payload: {
+            operation: 'pay_invoice',
+            amount_usd: extracted.amount_usd,
+            recipient_id: recipient.id,
+            payment_method: 'ach',
+            external_memo: `Owner approved ${extracted.invoice_number}`,
+            idempotency_key: `owner_approved_${Date.now()}`
+          },
+          context: {
+            matched_recipient_id: recipient.id,
+            historical_count: 1,
+            historical_median_usd: extracted.amount_usd,
+            ratio_to_median: 1.0,
+            budget_impact_percent: state.budget.remaining_usd > 0 ? (extracted.amount_usd / state.budget.remaining_usd) * 100 : 0
+          }
+        };
+
+        // 4. Dispatch payment execution
+        const exec = await outlayer.executePayment(approvedVerdict, state.policy);
+        liveProcessedInvoices.push({
+          invoice_number: extracted.invoice_number,
+          vendor_name: extracted.vendor_name,
+          recipient_id: recipient.id,
+          amount_usd: extracted.amount_usd,
+          processed_at: new Date().toISOString()
+        });
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          success: true,
+          verdict: approvedVerdict,
+          enclave_result: {
+            status: exec.output.status || (exec.output.success ? 'executed' : 'completed'),
+            transaction_id: exec.output.output?.transaction_id || exec.output.transaction_id,
+            attestation_url: exec.attestation_url
+          }
+        }));
       } catch (err: any) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: err.message }));

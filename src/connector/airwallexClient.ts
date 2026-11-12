@@ -223,6 +223,54 @@ export class AirwallexClient {
   }
 
   /**
+   * Create and onboard a new beneficiary on Airwallex
+   * POST /api/v1/beneficiaries/create
+   */
+  public async createBeneficiary(params: {
+    name: string;
+    accountNumber: string;
+    routingNumber?: string;
+    swiftCode?: string;
+    countryCode?: string;
+    currency?: string;
+    entityType?: 'COMPANY' | 'INDIVIDUAL';
+  }): Promise<{ id: string; name: string }> {
+    const payload = {
+      beneficiary: {
+        type: params.entityType || 'COMPANY',
+        company_name: params.name,
+        bank_details: {
+          account_currency: params.currency || 'USD',
+          account_name: params.name,
+          account_number: params.accountNumber,
+          bank_country_code: params.countryCode || 'US',
+          routing_number: params.routingNumber || '121000358',
+          swift_code: params.swiftCode
+        },
+        address: {
+          country_code: params.countryCode || 'US',
+          street_address: '100 Business St',
+          city: 'San Francisco',
+          state: 'CA',
+          postcode: '94105'
+        }
+      },
+      nick_name: params.name.slice(0, 30),
+      payment_methods: ['LOCAL']
+    };
+
+    const res = await this.request<any>('/beneficiaries/create', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+
+    return {
+      id: res.id,
+      name: params.name
+    };
+  }
+
+  /**
    * Syncs live state from Airwallex Demo/Production into the CFO-One TreasuryState
    */
   public async syncState(options: {

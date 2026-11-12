@@ -30,9 +30,9 @@ function printHeader(title: string) {
 async function runDemo() {
   printHeader('CFO-ONE: AUTONOMOUS TREASURY WITH DUAL-LAYER ENCLAVE DEFENSE');
   console.log(`${DIM}Architecture: "LLM extracts, code decides, Intel TDX enclave enforces."${RESET}`);
-  console.log(`${DIM}Connectors: Mercury Banking (Sandbox/Live) + OutLayer TEE (NEAR Testnet)${RESET}\n`);
+  console.log(`${DIM}Connectors: Airwallex Demo / Mercury Banking + OutLayer TEE (NEAR Testnet)${RESET}\n`);
 
-  // 1. Load Mercury state (Live API or verified sandbox fallback)
+  // 1. Load Treasury state (Live Airwallex/Mercury API or verified sandbox fallback)
   const stateResult = await StateProvider.getState();
   const state = stateResult.state;
   const fixturesDir = path.resolve(__dirname, '../../fixtures');
@@ -42,7 +42,14 @@ async function runDemo() {
   const extractor = new InvoiceExtractor();
   const outlayer = new OutLayerMercuryClient();
 
-  console.log(`${BOLD}1. ACTIVE MERCURY ENCLAVE POLICY${RESET} ${stateResult.source === 'live_mercury' ? `${GREEN}[LIVE MERCURY ACTIVE]${RESET}` : `${YELLOW}[SANDBOX FIXTURE]${RESET}`}`);
+  let activeRailTag = `${YELLOW}[SANDBOX FIXTURE]${RESET}`;
+  if (stateResult.source === 'live_airwallex') {
+    activeRailTag = `${GREEN}[LIVE AIRWALLEX DEMO ACTIVE]${RESET}`;
+  } else if (stateResult.source === 'live_mercury') {
+    activeRailTag = `${GREEN}[LIVE MERCURY ACTIVE]${RESET}`;
+  }
+
+  console.log(`${BOLD}1. ACTIVE TREASURY POLICY${RESET} ${activeRailTag}`);
   console.log(`   Account ID:        ${state.account_id}`);
   console.log(`   Account Balance:   ${GREEN}$${state.balance_usd.toLocaleString()}${RESET}`);
   console.log(`   30-Day Budget:     ${GREEN}$${state.budget.monthly_limit_usd.toLocaleString()}${RESET} ($${state.budget.spent_or_pending_usd.toLocaleString()} spent, $${state.budget.remaining_usd.toLocaleString()} remaining)`);
@@ -89,8 +96,8 @@ async function runDemo() {
         console.log(`                 Task Link: ${outlayerResult.output.link}`);
         console.log(`                 Attestation: ${outlayerResult.attestation_url}`);
       } else if (outlayerResult.output.success) {
-        console.log(`${BOLD}Layer 2 Enclave:${RESET} ${GREEN}[EXECUTED AT MERCURY]${RESET}`);
-        console.log(`                 Mercury Tx ID: ${outlayerResult.output.output?.transaction_id}`);
+        console.log(`${BOLD}Layer 2 Enclave:${RESET} ${GREEN}[EXECUTED AT BANK]${RESET}`);
+        console.log(`                 Bank Tx ID:    ${outlayerResult.output.output?.transaction_id || outlayerResult.output.transaction_id}`);
         console.log(`                 Attestation:   ${outlayerResult.attestation_url}`);
         // Record as processed
         processedRecords.push({

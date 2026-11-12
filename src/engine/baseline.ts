@@ -35,7 +35,7 @@ export function evaluateBaseline(
     signals.push({
       category: 'UNRECOGNIZED_VENDOR',
       severity: 'MEDIUM',
-      description: `Vendor "${invoice.vendor_name}" is not currently in Mercury saved recipients.`,
+      description: `Vendor "${invoice.vendor_name}" is not currently in saved treasury recipients / allowlist.`,
       evidence: { vendor_name: invoice.vendor_name }
     });
     return {

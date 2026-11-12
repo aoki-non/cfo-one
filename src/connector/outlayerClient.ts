@@ -116,14 +116,15 @@ export class OutLayerMercuryClient {
     }
 
     // 1. Live OutLayer Intel TDX Enclave Call
-    if (this.mode === 'live' && this.paymentKey && this.secretsAccount) {
+    const isRealHexKey = typeof this.paymentKey === 'string' && /^[0-9a-fA-F]{64}$/.test(this.paymentKey);
+    if (this.mode === 'live' && isRealHexKey && this.secretsAccount) {
       try {
         console.log(`[OutLayer] Executing real Intel TDX Enclave call via ${this.apiHost}...`);
         const res = await fetch(`https://${this.apiHost}/call/connectors.outlayer.testnet/mercury`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-Payment-Key': this.paymentKey
+            'X-Payment-Key': this.paymentKey!
           },
           body: JSON.stringify({
             input: payload,
@@ -144,10 +145,15 @@ export class OutLayerMercuryClient {
       } catch (err: any) {
         console.warn(`[OutLayer] Live network call failed (${err.message}). Falling back to sandbox/fixture.`);
       }
+    } else if (this.mode === 'live' && this.paymentKey && !isRealHexKey && process.env.DEBUG) {
+      console.log(`[OutLayer] Non-hex payment key detected; skipping live network call.`);
     }
 
     // 2. Direct Airwallex API Call (Demo / Production)
-    if (this.airwallexClient.isConfigured()) {
+    const isAirwallexBeneficiaryId = typeof payload.recipient_id === 'string' &&
+      (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(payload.recipient_id) || payload.recipient_id.startsWith('ben_'));
+
+    if (this.airwallexClient.isConfigured() && isAirwallexBeneficiaryId) {
       try {
         console.log(`[Airwallex] Dispatching live payout transfer to beneficiary ${payload.recipient_id}...`);
         const transferResult = await this.airwallexClient.createTransfer({
@@ -247,3 +253,5 @@ export class OutLayerMercuryClient {
     return parsed;
   }
 }
+
+export { OutLayerMercuryClient as OutLayerClient };

@@ -16,7 +16,7 @@ export function evaluateVelocityAndBudget(
     signals.push({
       category: 'BUDGET_EXHAUSTION',
       severity: 'CRITICAL',
-      description: `Budget Exceeded: Invoice amount ($${invoice.amount_usd.toFixed(2)}) exceeds remaining 30-day Mercury budget ($${remainingBudget.toFixed(2)}).`,
+      description: `Budget Exceeded: Invoice amount ($${invoice.amount_usd.toFixed(2)}) exceeds remaining 30-day treasury budget ($${remainingBudget.toFixed(2)}).`,
       evidence: {
         amount_usd: invoice.amount_usd,
         remaining_budget_usd: remainingBudget,

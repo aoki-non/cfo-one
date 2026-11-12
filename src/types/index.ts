@@ -93,6 +93,14 @@ export interface MercuryState {
   policy: MercuryPolicy;
 }
 
+// Treasury Aliases (supporting Airwallex, Mercury, and multi-rail banking)
+export type TreasuryRecipient = MercuryRecipient;
+export type TreasuryTransaction = MercuryTransaction;
+export type TreasuryPolicyRule = MercuryPolicyRule;
+export type TreasuryPolicy = MercuryPolicy;
+export type TreasuryBudget = MercuryBudget;
+export type TreasuryState = MercuryState;
+
 export type VerdictAction = 'ALLOW' | 'ASK_OWNER' | 'REFUSE';
 
 export type ThreatCategory =

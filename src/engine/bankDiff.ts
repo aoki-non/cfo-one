@@ -38,7 +38,7 @@ export function evaluateBankDetails(
     signals.push({
       category: 'BANK_DETAILS_MISMATCH',
       severity: 'CRITICAL',
-      description: `CRITICAL SECURITY ALERT: Invoice routing number (${routing_number}) DOES NOT MATCH saved Mercury recipient (${savedRecipient.routing_number}). Probable Business Email Compromise (BEC) / Account Takeover.`,
+      description: `CRITICAL SECURITY ALERT: Invoice routing number (${routing_number}) DOES NOT MATCH saved recipient record (${savedRecipient.routing_number}). Probable Business Email Compromise (BEC) / Account Takeover.`,
       evidence: {
         invoice_routing: routing_number,
         saved_routing: savedRecipient.routing_number,
@@ -52,7 +52,7 @@ export function evaluateBankDetails(
     signals.push({
       category: 'BANK_DETAILS_MISMATCH',
       severity: 'CRITICAL',
-      description: `CRITICAL SECURITY ALERT: Invoice account number ending in ${account_number_last4} DOES NOT MATCH saved Mercury account ending in ${savedRecipient.account_number_last4}.`,
+      description: `CRITICAL SECURITY ALERT: Invoice account number ending in ${account_number_last4} DOES NOT MATCH saved account record ending in ${savedRecipient.account_number_last4}.`,
       evidence: {
         invoice_account_last4: account_number_last4,
         saved_account_last4: savedRecipient.account_number_last4,

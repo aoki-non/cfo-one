@@ -172,7 +172,7 @@
 
     <div class="grid-top">
       <div class="card">
-        <div class="card-title">Mercury Bank Balance</div>
+        <div class="card-title" id="title-balance">Bank Balance</div>
         <div class="card-val" id="val-balance">$48,250.00</div>
         <div class="card-sub" id="val-account">Account: mercury_act_9019283</div>
       </div>
@@ -189,7 +189,7 @@
       <div class="card">
         <div class="card-title">Live Payee Allowlist</div>
         <div class="card-val" style="color: var(--cyan);" id="val-payees">6 Payees</div>
-        <div class="card-sub">Pre-registered Mercury recipients</div>
+        <div class="card-sub" id="sub-payees">Pre-registered allowlist recipients</div>
       </div>
     </div>
 
@@ -230,6 +230,7 @@
         <div class="inspector">
           <div style="font-weight: 700; font-size: 16px; margin-bottom: 6px;">Dual-Layer Attestation Inspector</div>
           <div style="font-size: 12px; color: var(--text-muted);" id="inspect-summary">Select an invoice or evaluate a new one above.</div>
+          <div id="owner-action-container"></div>
           <pre id="inspect-json">// Detailed verification results will appear here</pre>
         </div>
       </div>
@@ -266,12 +267,18 @@
         if (st.airwallex_configured) {
           badge.className = 'badge badge-green';
           badge.innerText = 'Airwallex Demo: Live';
+          document.getElementById('title-balance').innerText = 'Airwallex Demo Balance';
+          document.getElementById('sub-payees').innerText = 'Live Airwallex Beneficiaries';
         } else if (st.mercury_configured) {
           badge.className = 'badge badge-green';
           badge.innerText = 'Mercury API: Live';
+          document.getElementById('title-balance').innerText = 'Mercury Bank Balance';
+          document.getElementById('sub-payees').innerText = 'Pre-registered Mercury Recipients';
         } else {
           badge.className = 'badge badge-yellow';
           badge.innerText = 'Treasury Sandbox: Local Fixture';
+          document.getElementById('title-balance').innerText = 'Treasury Sandbox Balance';
+          document.getElementById('sub-payees').innerText = 'Sandbox Fixture Recipients';
         }
       } catch (err) {
         console.warn('Status load error:', err);
@@ -343,6 +350,19 @@
     function inspectItem(item) {
       document.getElementById('inspect-summary').innerText =
         `Verdict: ${item.verdict.action} | Decided at Layer ${item.verdict.decided_at_layer} Engine`;
+
+      const actionContainer = document.getElementById('owner-action-container');
+      if (item.verdict.action === 'ASK_OWNER') {
+        actionContainer.innerHTML = `
+          <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 6px; padding: 12px; margin-top: 12px;">
+            <div style="font-weight: 700; color: #fbbf24; font-size: 13px; margin-bottom: 4px;">Owner Sign-off & Onboarding Required</div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">This invoice triggered a safety boundary. As CFO, you can approve payment and onboard the vendor allowlist.</div>
+            <button class="primary" style="background: #f59e0b; border-color: #f59e0b; color: #000; font-weight: 700;" onclick="approveInvoice('${item.id}')">Approve & Execute Payment</button>
+          </div>
+        `;
+      } else {
+        actionContainer.innerHTML = '';
+      }
       
       const details = {
         invoice_id: item.id,
@@ -355,6 +375,32 @@
       };
 
       document.getElementById('inspect-json').innerText = JSON.stringify(details, null, 2);
+    }
+
+    async function approveInvoice(id) {
+      const item = dataset.find(d => d.id === id);
+      if (!item) return;
+      const statusEl = document.getElementById('inspect-summary');
+      statusEl.innerText = 'Approving invoice and executing payment...';
+      try {
+        const res = await fetch('/api/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: item.id, extracted: item.extracted })
+        });
+        const result = await res.json();
+        if (result.success) {
+          item.verdict = result.verdict;
+          item.enclave_result = result.enclave_result;
+          renderFeed(dataset);
+          inspectItem(item);
+          loadStatus();
+        } else {
+          alert('Approval failed: ' + (result.error || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('Approval error: ' + err.message);
+      }
     }
 
     setSample('normal');
