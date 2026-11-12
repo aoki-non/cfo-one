@@ -152,7 +152,8 @@ export class AirwallexClient {
    * GET /api/v1/balances/current
    */
   public async getBalances(): Promise<AirwallexBalance[]> {
-    const data = await this.request<{ balances?: AirwallexBalance[]; items?: AirwallexBalance[] }>('/balances/current');
+    const data = await this.request<any>('/balances/current');
+    if (Array.isArray(data)) return data;
     return data.balances || data.items || [];
   }
 
