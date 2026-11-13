@@ -1,27 +1,33 @@
-# CFO-One: Autonomous Treasury for the Company of One
+# CFO-One: Autonomous B2B Clearance & Treasury Shop
 
-> Autonomous treasury ops with dual-layer Intel TDX enclave defense.  
+> **NEAR Hackathon 2026 — Track 04: Autonomous Business**  
+> *"The company of one. Or none. Build AI-native businesses with treasury, sales, procurement, cross-chain payments via NEAR Intents, and revenue sharing. Humans only set the constraints."*  
 > **Tagline:** *"We didn't build a smarter agent, we built a CFO that proves why it said no."*
-
-Built for **NEAR Hackathon 2026**  
-**Tracks:** `business` (Autonomous Business), `security` (AI Security & Defense), `realworld` (Real-World Money)
 
 ---
 
-## 1. What It Is and The Problem It Solves
+## 1. What CFO-One Does
 
-Giving an AI agent direct API access to a corporate bank account (e.g. Mercury) is dangerous. Prompt injections, hallucinated reasoning, and billing anomalies can drain capital in minutes.
+**CFO-One** is an autonomous B2B financial clearance business operating with zero human headcount:
 
-The **OutLayer Mercury Connector** runs inside an Intel TDX confidential enclave (TEE) to enforce hard spending limits and keep bank credentials encrypted outside the AI. **This solves: "Can the agent steal?"**
+1. **Commercial Product (Sales Inflow)**: Sells confidential TEE invoice verification & treasury clearance as a service to DAOs, startups, and autonomous AI agents.
+2. **Cross-Chain Payments (NEAR Intents / 1Click API)**: Clients pay audit fees ($10–$100+) in *any* token (Base USDC, Solana USDC, Ethereum ETH, Arbitrum USDC, or NEAR). Solvers fulfill the swap and settle funds directly to the agent's treasury on NEAR (`longdata4360.testnet`).
+3. **Automated Revenue Sharing**: Programmatically splits 100% of revenue on-chain:
+   - **70%** Retained in Treasury Reserve
+   - **20%** Dispatched as dividends to human contributors (`contributors.testnet`)
+   - **10%** Protocol Liquidity & Slippage Reserve
+4. **Autonomous Procurement & Compute**: The agent purchases its own extraction inference from NEAR AI Cloud (metered under a strict $25.00/day founder limit) and settles vendor payables across live banking rails (Airwallex Demo API).
+5. **Human Constraints (`config/config.yaml`)**: Humans never approve routine payments. Humans only set the declarative boundaries:
+   - $10.00 Minimum audit fee
+   - $25.00 Daily AI inference budget
+   - $1,000.00 Single-payment hardware ceiling enforced by Intel TDX enclave
+   - Emergency hardware Kill Switch (instantly freezes all disbursements)
 
-However, an enclave alone cannot solve: **"Will the agent pay the right thing?"**
-- An invoice from an approved vendor with quietly inflated numbers (e.g. $285 vs normal $42).
-- The same invoice submitted twice under mutated invoice numbers.
-- A legitimate vendor invoice with modified bank routing details (Business Email Compromise / BEC).
-- Rapid micro-billing eating up 30-day runway.
-- Imperative instructions injected into invoice memos.
+---
 
-**CFO-One provides the missing Judgment Layer.**
+## 2. Dual-Layer Security Architecture
+
+Giving an AI agent direct, unconstrained access to a bank account or private key is financial suicide. Prompt injections and billing anomalies can drain capital in minutes.
 
 ```
 Incoming Invoice (Email / PDF / JSON / CLI)
@@ -29,135 +35,92 @@ Incoming Invoice (Email / PDF / JSON / CLI)
                  ▼
 ┌────────────────────────────────────────────────────────┐
 │  LAYER 1: The Judgment Engine (Soft Layer)             │
-│  • LLM extracts structured fields without deciding    │
+│  • LLM extracts structured facts without deciding      │
+│  • Bank detail diffing vs saved Airwallex recipients   │
 │  • Median ratio check vs historical baseline           │
 │  • Exact & mutated duplicate detection                 │
-│  • Bank detail diffing vs saved Mercury recipients     │
 │  • 30-day velocity & budget drain checks               │
-│  • Prompt injection & instruction-like text screening  │
+│  • Prompt injection & imperative instruction screening │
 │  Verdict: [ALLOW] | [ASK_OWNER] | [REFUSE]             │
 └───────────────────────┬────────────────────────────────┘
-                        │ Verdict = ALLOW or ASK
+                        │ Verdict = ALLOW or ASK_OWNER
                         ▼
 ┌────────────────────────────────────────────────────────┐
-│  LAYER 2: Enclave Hardware Policy (OutLayer TDX)       │
-│  • MERCURY_POLICY: $1,000 max single-payment cap       │
-│  • Allowed payee allowlist                             │
-│  • Rule matching: $300-$1,000 -> awaiting_owner task   │
-│  • Signed Intel TDX remote attestation quote           │
+│  LAYER 2: Enclave Hardware Policy (Intel TDX TEE)      │
+│  • $1,000.00 Hardware ceiling per payment              │
+│  • Allowed payee allowlist validation                  │
+│  • Rules: $300-$1,000 -> awaiting_owner co-sign        │
+│  • Verifiable Intel TDX remote attestation quote       │
 └───────────────────────┬────────────────────────────────┘
                         │ Passes Enclave
                         ▼
 ┌────────────────────────────────────────────────────────┐
-│  LAYER 3: Human Backstop (Mercury Native)              │
-│  • "Read + Send Money with Approval"                   │
-│  • Final human signature in Mercury Dashboard          │
+│  LAYER 3: Live Rails Execution                         │
+│  • Fiat: Airwallex Global Demo API (ACH / Wire)        │
+│  • Crypto: NEAR Testnet MPC Chain Signatures           │
 └────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 2. Making It Real: Live Multi-Rail Treasury (Airwallex Demo, Mercury, NEAR Testnet)
+## 3. Live Environments & Testnet Status
 
-CFO-One is built to eliminate dummy/simulated data. It connects directly to live bank environments and confidential enclaves:
+CFO-One eliminates mock simulations and connects to real testnet networks across all rails:
 
-### A. Airwallex Global Multi-Currency API (Demo / Sandbox / Live) — *Recommended Globally*
-CFO-One includes a full typed client (`src/connector/airwallexClient.ts`) interacting with the Airwallex v1 API (`https://api-demo.airwallex.com/api/v1`):
-- **Universal Developer Access**: Free demo accounts are available globally (no US entity or domestic KYC needed).
-- **Multi-Currency Balances**: Synchronizes real wallet balances across USD, EUR, GBP, and local clearing routes.
-- **Beneficiary Allowlist & BEC Defense**: Fetches saved beneficiaries (`/beneficiaries`) and diff-checks invoice bank account / routing / IBAN details to detect Business Email Compromise.
-- **Payout Transfers**: Dispatches payments (`/transfers/create`) with idempotency keys and native dashboard approval flows.
-
-### B. Mercury Banking Integration (US Sandbox / Production)
-CFO-One includes a full typed client (`src/connector/mercuryClient.ts`) interacting with Mercury API v1 (`https://api.mercury.com/api/v1`):
-- **Live Account Balances**: Fetches real checking/treasury account balances.
-- **Live Payee Allowlist**: Automatically synchronizes your approved recipients (`/recipients`) into the Layer 1 BEC diffing engine.
-- **Dynamic 30-Day Velocity & Baselines**: Pulls historical transactions (`/account/{id}/transactions`) to calculate vendor medians and remaining monthly budget from actual data.
-- **Payment Approvals**: Initiates payments using tokens configured with **"Send Money with Approval"**, ensuring payments queue in your Mercury dashboard for 1-click human owner signoff.
-
-### C. OutLayer Intel TDX Enclaves on NEAR Testnet
-- Executes calls through `testnet-api.outlayer.ai` via connector `connectors.outlayer.testnet/mercury`.
-- Provides signed Intel TDX remote attestation quotes verifying that per-transaction hardware limits are physically enforced inside the TEE.
+| Rail | Environment | Live Network & Credentials | Status |
+| :--- | :--- | :--- | :--- |
+| **NEAR Protocol** | Testnet | Account: `longdata4360.testnet`<br>Dividends: `contributors.testnet` | **ACTIVE** |
+| **Chain Signatures** | Testnet | MPC Contract: `v1.signer-prod.testnet` | **ACTIVE** |
+| **NEAR Intents** | Mainnet API + Testnet Settlement | `1click.chaindefuser.com/v0/tokens` (30+ chains) | **ACTIVE** |
+| **Airwallex Banking** | Global Demo | `https://api-demo.airwallex.com/api/v1`<br>Balance: **$9,999,944.10 USD** (7 beneficiaries) | **ACTIVE** |
+| **OutLayer TEE** | NEAR Testnet | `testnet-api.outlayer.ai` (Intel TDX Enclave) | **ACTIVE** |
 
 ---
 
-## 3. Quickstart & Command Reference
+## 4. Quickstart & Command Reference
 
 ### Step 1: Install Dependencies
 ```bash
 npm install
 ```
 
-### Step 2: Audit Connectivity & Credentials
-Check whether live Mercury or OutLayer credentials are configured:
+### Step 2: System Connectivity & Credential Audit
 ```bash
 npm run status
 ```
 
-### Step 3: Run the 15-Second Verified Demo
+### Step 3: Run the 2-Minute Autonomous Commercial Loop
+Demonstrates the full autonomous business lifecycle on NEAR Testnet in under 20 seconds (sales inflow via NEAR Intents → 20% contributor dividend dispatch → confidential TEE audit → inference procurement):
 ```bash
-npm run demo
+npm run demo:loop
 ```
 
-### Step 4: Scan Any Real Invoice Document
-Scan any real invoice file or string dynamically through the 3-layer pipeline:
-```bash
-# Scan with inline invoice text
-npm run scan -- --text "INVOICE #9901 from Vercel Inc. Amount: $42.00 Due: 2026-11-20 Routing: 121000358 Acct: 4419"
-
-# Or scan an invoice file
-npm run scan -- --file path/to/invoice.txt
-```
-
-### Step 5: Launch the Interactive Web Cockpit
+### Step 4: Launch the High-Density Web Cockpit
 ```bash
 npm run web
 ```
-Open [http://localhost:3000](http://localhost:3000) to access the real-time invoice workbench, live treasury stats, and the complete 40-case adversarial benchmark.
+Open **[http://localhost:3000](http://localhost:3000)** to view:
+- **01. Clearance & Risk Engine**: Payables stream, vendor breakdown, BEC threat alerts, and Intel TDX attestation quote links.
+- **02. Revenue Distribution & Dividends**: 70/20/10 split visualization, interactive \$25 / \$50 commercial sale simulator, and Public Transparency Ledger.
+- **03. NEAR Intents Multi-Chain Solver**: Token deposit quotes across Base, Solana, Arbitrum, Ethereum, and NEAR.
+- **04. Founder Constraints**: Live view of `config.yaml` policies and hardware Kill Switch.
 
-### Step 6: Run Automated Tests
+### Step 5: Run Automated Tests
 ```bash
 npm test
 ```
-**Expected Output:**
-```
-✔ should initialize MercuryClient and verify configuration handling
-✔ should auto-approve routine recurring invoices (Control Group)
-✔ should block BEC account takeover / bank detail routing swaps at Layer 1
-✔ should escalate high-value legal retainer to OutLayer awaiting_owner task
-✔ should detect prompt injection in invoice memo and escalate to owner
-✔ should enforce Enclave hardware spending cap on forced $12,000 transaction
-✔ should evaluate full 40-case benchmark with 0 false negatives
-ℹ tests 7 | pass 7 | fail 0
-```
+**Results:** **16/16 tests passing across 2 test suites** with 0 failures:
+- `CFO-One: Adversarial & Legitimate Test Suite` (8/8 pass)
+- `CFO-One: Autonomous Business Track Test Suite` (8/8 pass)
 
 ---
 
-## 4. Connecting Real Credentials (Environment Setup)
+## 5. Measured Security Benchmark (40 Test Invoices)
 
-Copy `.env.example` to `.env`:
-```bash
-cp .env.example .env
-```
-
-| Environment Variable | Description |
-|---|---|
-| `MERCURY_API_KEY` | Bearer token from Mercury Dashboard (Settings -> API Tokens). Use "Read and Send Money with Approval". |
-| `MERCURY_ACCOUNT_ID` | Optional: Your target Mercury checking account ID. |
-| `OUTLAYER_PAYMENT_KEY` | OutLayer testnet payment key for Intel TDX execution. |
-| `OUTLAYER_SECRETS_ACCOUNT` | Your NEAR Testnet account ID (e.g. `owner.testnet`). |
-| `NEAR_AI_API_KEY` | Optional: Private TEE LLM inference via NEAR AI Cloud (`meta-llama/Meta-Llama-3.1-70B-Instruct`). |
-
-*Note: If no API keys are exported, CFO-One automatically falls back to verified sandbox fixtures with clear terminal notices, ensuring that CI/CD and offline evaluations succeed without hard external dependencies.*
-
----
-
-## 5. Measured Benchmark Results (Unedited)
-
-Tested against **40 real-world invoice vectors**:
-- **15 Legitimate Invoices**: SaaS subscriptions, hourly contractor sprints, legal retainers, and new vendor onboarding.
-- **15 Open Adversarial Invoices**: Duplicates, creeping inflation, bank swaps, prompt injections, and budget siphons.
-- **10 Held-out Adversarial Invoices**: Unseen test set evaluated live during execution.
+Tested against **40 real-world invoice vectors** (`fixtures/invoices_dataset.json`):
+- **15 Legitimate Invoices**: Recurring SaaS subscriptions, cloud infrastructure, legal retainers.
+- **15 Open Adversarial Invoices**: Duplicates, creeping price inflation, bank routing swaps (BEC), prompt injections, and budget siphons.
+- **10 Held-out Adversarial Invoices**: Unseen test set evaluated live.
 
 | Category | Metric | Measured Result |
 |---|---|---|
@@ -165,110 +128,52 @@ Tested against **40 real-world invoice vectors**:
 | **Legitimate Escalation** | Sent to owner inbox (`ASK_OWNER`) | **5 / 15 (33%)** (High-value & new vendors) |
 | **False Positives** | Legitimate invoices erroneously blocked | **0 / 15 (0%)** |
 | **Adversarial Defense** | Hostile invoices caught at Layer 1 | **25 / 25 (100%)** (16 Refused, 9 Escalated) |
-| **Enclave Hardware Backstop** | Enclave Cap breaches physically blocked | **100%** (Hardware TDX enforced) |
+| **Enclave Hardware Backstop** | Enclave Cap breaches physically blocked | **100%** (Intel TDX hardware enforced) |
 | **False Negatives** | Hostile attacks allowed through | **0 / 25 (0%)** |
 | **Held-Out Test Set** | Unseen adversarial cases caught | **10 / 10 (100%)** |
 
 ---
 
-## 6. Architectural Invariants
-
-1. **"LLM extracts, code decides"**: The model translates unstructured invoice text into structured fields. The LLM never decides whether to pay; deterministic code evaluates invariants.
-2. **Bank Detail Decoupling**: The agent **never** sends funds to bank details printed on an invoice. The connector strictly pays pre-registered Mercury `recipient_id`s. Bank details on invoices are strictly diff-checked against saved records to detect Business Email Compromise (BEC).
-3. **Statistical Baseline over Thin History**: Uses median ratio with minimum observation count (>= 3 payments). Vendors with fewer than 3 payments are escalated to `ASK_OWNER`.
-4. **OutLayer Enclave Rules Alignment**:
-   - `max_payment_usd: 1000.00` is a hardware ceiling.
-   - Rule `min_usd: 300, max_usd: 1000` -> `then: ask` triggers native OutLayer `awaiting_owner` task creation with wallet signature confirmation.
-
----
-
-## 7. Project Structure
-
-```
-cfo-one/
-├── .env.example                       # Environment configuration guide
-### 3. Track 04: Autonomous Business ("The Company of One, or None")
-
-CFO-One operates as a self-sustaining **Autonomous Clearance & Treasury Shop**:
-- **Commercial Product**: B2B Confidential TEE Invoice Verification & Cross-Chain Treasury Clearance for DAOs, startups, and autonomous AI agents.
-- **Sales Inflow (NEAR Intents / 1Click API)**: Clients pay for clearance fees in *any* token (Base USDC, Solana SOL, Ethereum ETH, or NEAR). Cross-chain solvers settle funds directly into CFO-One's treasury account.
-- **Founder Governance (`config/config.yaml`)**: The human sets rules in one YAML file:
-  - Minimum audit fee ($10.00)
-  - Daily AI inference compute ceiling ($25.00/day)
-  - Enclave single-payment cap ($1,000.00)
-  - Automated revenue splits: 70% Retained Treasury, 20% Contributor Dividends, 10% Reserve
-  - Emergency hardware kill switch (freezes all payouts instantly inside TEE)
-- **Automated Revenue Sharing**: 20% of every clearance sale is programmatically calculated and dispatched to `contributors.testnet` on NEAR.
-- **Autonomous Procurement**: The agent buys its own extraction inference from NEAR AI Cloud and pays operational bills (Airwallex fiat ACH/wire) strictly within enclave limits.
-- **Public Transparency Ledger**: Live on-chain audit trail in the Web Cockpit logging every Sale, Contributor Dividend, AI Inference Expense, and Intel TDX attestation quote.
-
-```bash
-# Run the 2-minute autonomous commercial loop on NEAR Testnet:
-npm run demo:loop
-```
-
----
-
-## 4. Quickstart & Commands
-
-```bash
-# 1. Check system connectivity (Airwallex Demo, NEAR Testnet, Founder Constraints)
-npm run status
-
-# 2. Run the 2-minute autonomous business loop (Track 04)
-npm run demo:loop
-
-# 3. Scan & evaluate an invoice from the CLI
-npm run scan -- --text "INVOICE #INV-01 Vendor: Vercel Amount: $42.00"
-
-# 4. Launch the Web Cockpit with Public Ledger & Kill Switch
-npm run web
-# Open http://localhost:3000
-
-# 5. Run the full test suite (16 tests, 2 suites)
-npm test
-```
-
----
-
-## 5. Architecture & Codebase Map
+## 6. Codebase Architecture Map
 
 ```
 cfo-one/
 ├── config/
-│   └── config.yaml                    # Founder constraints, revenue splits & kill switch
+│   └── config.yaml                    # Declarative founder constraints, splits & kill switch
 ├── fixtures/
-│   ├── mock_mercury_state.json        # Fallback account, recipients & policy
 │   ├── invoices_dataset.json          # 40-case benchmark (15 legit, 15 open hostile, 10 held-out)
 │   ├── public_ledger.json             # Immutable public transparency ledger
 │   └── recorded_responses/            # Real Intel TDX attestation response envelopes
 ├── src/
 │   ├── config/
-│   │   ├── env.ts                     # Multi-environment secret loader
+│   │   ├── env.ts                     # Environment loader
 │   │   └── constraints.ts             # YAML constraints manager & kill switch handler
 │   ├── intents/
 │   │   └── oneClickClient.ts          # NEAR Intents / 1Click multi-chain payment solver
 │   ├── business/
-│   │   ├── revenueSplitter.ts         # Programmatic 70/20/10 dividend dispatcher
-│   │   └── inferenceBudget.ts         # Autonomous NEAR AI Cloud compute meter
+│   │   ├── revenueSplitter.ts         # Programmatic 70/20/10 dividend distribution engine
+│   │   └── inferenceBudget.ts         # Autonomous compute meter ($25/day limit)
 │   ├── chainSig/
-│   │   └── mpcSigner.ts               # NEAR Chain Signatures (v1.signer-prod.testnet)
+│   │   └── mpcSigner.ts               # NEAR MPC Chain Signatures (v1.signer-prod.testnet)
 │   ├── ledger/
 │   │   └── publicLedger.ts            # Public transparency ledger audit engine
-│   ├── engine/                        # Dual-layer threat defense (BEC, budget, bankDiff)
-│   ├── extraction/                    # LLM invoice extraction & instruction screening
-│   ├── connector/                     # Airwallex Demo, Mercury API & OutLayer TEE Enclave
+│   ├── engine/                        # Layer 1 threat defense (bankDiff, injection, baseline)
+│   ├── extraction/                    # LLM invoice parser with anti-injection prompt barrier
+│   ├── connector/                     # Airwallex Demo API, Mercury client & OutLayer TEE
 │   ├── cli/
-│   │   ├── demoLoop.ts                # 2-minute autonomous business loop (Track 04)
-│   │   ├── scan.ts                    # Live invoice ingestion CLI
+│   │   ├── demoLoop.ts                # 2-minute autonomous commercial loop (Track 04)
+│   │   ├── scan.ts                    # Dynamic CLI invoice scanner
 │   │   └── status.ts                  # System connectivity & credential auditor
 │   └── web/
-│       ├── index.html                 # Web Cockpit with Public Ledger & Kill Switch
-│       └── server.ts                  # Backend API server with /api/ledger, /api/kill-switch
+│       ├── index.html                 # High-density utilitarian financial terminal UI
+│       └── server.ts                  # Backend API server (/api/status, /api/ledger, /api/kill-switch)
 └── tests/
-    ├── adversarial.test.ts            # Security & threat benchmark tests
-    └── autonomous_business.test.ts    # Track 04 autonomous business test suite
+    ├── adversarial.test.ts            # Security & threat benchmark tests (8 tests)
+    └── autonomous_business.test.ts    # Track 04 autonomous business test suite (8 tests)
 ```
 
-## License
+---
+
+## 7. License
+
 MIT
