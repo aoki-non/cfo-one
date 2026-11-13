@@ -149,6 +149,12 @@ const server = http.createServer(async (req, res) => {
     const entries = PublicLedger.getEntries();
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(entries));
+  } else if (req.url === '/api/ledger/export') {
+    const csv = PublicLedger.toCSV();
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="cfo_one_general_ledger.csv"');
+    res.writeHead(200);
+    res.end(csv);
   } else if (req.url === '/api/kill-switch' && req.method === 'POST') {
     let body = '';
     req.on('data', (c) => { body += c; });
@@ -387,6 +393,18 @@ const server = http.createServer(async (req, res) => {
           recipient_id: recipient.id,
           amount_usd: extracted.amount_usd,
           processed_at: new Date().toISOString()
+        });
+
+        // Record approved operational payout into Public Ledger
+        PublicLedger.recordEntry({
+          type: 'PROCUREMENT_OUTFLOW',
+          amount_usd: extracted.amount_usd,
+          asset: 'USD (Airwallex)',
+          counterparty: extracted.vendor_name,
+          description: `Authorized operational payout: ${extracted.invoice_number}`,
+          status: 'SETTLED',
+          attestation_url: exec.attestation_url || 'https://api.outlayer.ai/attestation/intel-tdx-quote',
+          tx_hash: exec.output?.transaction_id || `awx_${Date.now()}`
         });
 
         res.writeHead(200, { 'Content-Type': 'application/json' });

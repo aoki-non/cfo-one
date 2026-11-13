@@ -96,6 +96,24 @@ export class PublicLedger {
     return [...this.entries];
   }
 
+  public static toCSV(): string {
+    const entries = this.getEntries();
+    const headers = ['ID', 'Timestamp', 'Type', 'Amount_USD', 'Asset', 'Counterparty', 'Description', 'Status', 'Attestation_URL', 'TX_Hash'];
+    const rows = entries.map(e => [
+      e.id,
+      e.timestamp,
+      e.type,
+      Number(e.amount_usd || 0).toFixed(2),
+      `"${(e.asset || '').replace(/"/g, '""')}"`,
+      `"${(e.counterparty || '').replace(/"/g, '""')}"`,
+      `"${(e.description || '').replace(/"/g, '""')}"`,
+      e.status,
+      e.attestation_url,
+      e.tx_hash || ''
+    ].join(','));
+    return [headers.join(','), ...rows].join('\n');
+  }
+
   public static recordEntry(entry: Omit<LedgerEntry, 'id' | 'timestamp'>): LedgerEntry {
     this.init();
     const newEntry: LedgerEntry = {

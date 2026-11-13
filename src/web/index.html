@@ -1112,7 +1112,10 @@
       <div class="table-container">
         <div style="padding: 12px 16px; background: var(--surface-2); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
           <span style="font-weight: 600; font-size: 13px;">Public Transparency & Settlement Ledger</span>
-          <button class="btn-action" onclick="loadLedger()">Refresh Ledger</button>
+          <div style="display: flex; gap: 8px;">
+            <a href="/api/ledger/export" download="cfo_one_general_ledger.csv" class="btn-action" style="text-decoration: none; color: inherit;">Export CPA Ledger (CSV)</a>
+            <button class="btn-action" onclick="loadLedger()">Refresh</button>
+          </div>
         </div>
         <table class="data-table-full">
           <thead>
@@ -1584,6 +1587,7 @@
           let tagClass = 'badge-emerald';
           if (e.type === 'REVENUE_SPLIT') tagClass = 'badge-blue';
           else if (e.type === 'SECURITY_INTERCEPT') tagClass = 'badge-rose';
+          else if (e.type === 'PROCUREMENT_OUTFLOW') tagClass = 'badge-amber';
 
           const tr = document.createElement('tr');
           tr.innerHTML = `
