@@ -119,7 +119,11 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if (req.url === '/' || req.url === '/index.html') {
+  if (req.url === '/' || req.url === '/landing.html') {
+    const html = fs.readFileSync(path.join(__dirname, 'landing.html'), 'utf-8');
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(html);
+  } else if (req.url === '/cockpit' || req.url === '/cockpit.html' || req.url === '/index.html') {
     const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf-8');
     res.writeHead(200, { 'Content-Type': 'text/html' });
     res.end(html);
