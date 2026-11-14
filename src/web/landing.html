@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CFO-One // Autonomous B2B Treasury & Clearance Engine</title>
+  <title>CFO-One — The Autonomous Financial Officer for Founders</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #08090d;
-      --surface-1: #0e1017;
-      --surface-2: #141722;
-      --surface-3: #1a1e2d;
-      --surface-hover: #212638;
+      --bg: #090a0f;
+      --surface-1: #11131a;
+      --surface-2: #171a24;
+      --surface-3: #1f2330;
+      --surface-hover: #262b3b;
       --border: rgba(255, 255, 255, 0.08);
       --border-subtle: rgba(255, 255, 255, 0.04);
       --border-focus: rgba(255, 255, 255, 0.2);
@@ -21,7 +21,6 @@
       --text: #f8fafc;
       --text-secondary: #94a3b8;
       --text-muted: #64748b;
-      --text-dim: #475569;
 
       --blue: #3b82f6;
       --blue-surface: rgba(59, 130, 246, 0.08);
@@ -39,8 +38,8 @@
       --rose-surface: rgba(244, 63, 94, 0.08);
       --rose-border: rgba(244, 63, 94, 0.25);
 
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -49,306 +48,317 @@
       background-color: var(--bg);
       color: var(--text);
       font-family: var(--font-sans);
-      font-size: 14px;
+      font-size: 15px;
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
     }
 
     .container {
-      max-width: 1200px;
+      max-width: 1160px;
       margin: 0 auto;
       padding: 0 24px;
     }
 
     /* Top Navigation */
-    nav.site-nav {
+    nav.navbar {
       position: sticky;
       top: 0;
-      background: rgba(8, 9, 13, 0.85);
+      background: rgba(9, 10, 15, 0.9);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       z-index: 100;
-      padding: 14px 0;
+      padding: 16px 0;
     }
 
-    .nav-inner {
+    .nav-content {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .brand-link {
+    .brand-group {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       text-decoration: none;
       color: inherit;
     }
 
-    .brand-symbol {
+    .brand-logo {
       font-family: var(--font-mono);
       font-weight: 700;
-      font-size: 15px;
-      letter-spacing: -0.02em;
+      font-size: 16px;
       color: #fff;
+      letter-spacing: -0.02em;
     }
 
-    .brand-pill {
-      font-size: 10px;
+    .brand-tag {
+      font-size: 11px;
       font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
       color: var(--text-muted);
       background: var(--surface-2);
       border: 1px solid var(--border);
-      padding: 2px 8px;
+      padding: 3px 8px;
       border-radius: 4px;
     }
 
-    .nav-links {
+    .nav-actions {
       display: flex;
       align-items: center;
-      gap: 24px;
+      gap: 16px;
     }
 
     .nav-link {
-      font-size: 13px;
       color: var(--text-secondary);
       text-decoration: none;
+      font-size: 14px;
       font-weight: 500;
-      transition: color 0.15s ease;
+      transition: color 0.15s;
     }
-    .nav-link:hover {
-      color: #fff;
-    }
+    .nav-link:hover { color: #fff; }
 
-    .btn-nav-primary {
-      font-family: var(--font-sans);
-      font-size: 12px;
-      font-weight: 600;
+    .btn-dashboard {
       background: #fff;
       color: #000;
       text-decoration: none;
-      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 16px;
       border-radius: 6px;
       transition: opacity 0.15s ease;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 6px;
     }
-    .btn-nav-primary:hover {
-      opacity: 0.9;
-    }
+    .btn-dashboard:hover { opacity: 0.9; }
 
-    /* Hero Section */
-    section.hero {
+    /* Hero */
+    header.hero {
       padding: 80px 0 60px;
-      text-align: left;
     }
 
     .hero-eyebrow {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-family: var(--font-mono);
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       color: var(--blue);
       background: var(--blue-surface);
       border: 1px solid var(--blue-border);
-      padding: 4px 10px;
-      border-radius: 4px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      margin-bottom: 24px;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 20px;
+      letter-spacing: 0.04em;
     }
 
-    .hero-title {
-      font-size: 48px;
+    .hero-heading {
+      font-size: 52px;
       font-weight: 800;
       line-height: 1.15;
       letter-spacing: -0.03em;
       color: #fff;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
       max-width: 860px;
     }
 
     .hero-desc {
-      font-size: 17px;
+      font-size: 18px;
       color: var(--text-secondary);
       max-width: 720px;
       line-height: 1.6;
-      margin-bottom: 32px;
+      margin-bottom: 36px;
     }
 
-    .hero-actions {
+    .hero-buttons {
       display: flex;
       align-items: center;
       gap: 14px;
-      margin-bottom: 40px;
-      flex-wrap: wrap;
-    }
-
-    .btn-cta-main {
-      font-size: 13px;
-      font-weight: 600;
-      background: #2563eb;
-      color: #fff;
-      text-decoration: none;
-      padding: 10px 20px;
-      border-radius: 6px;
-      border: 1px solid #3b82f6;
-      transition: background 0.15s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .btn-cta-main:hover {
-      background: #1d4ed8;
-    }
-
-    .cmd-box {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--surface-1);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 8px 14px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--text-secondary);
-      cursor: pointer;
-      user-select: all;
-    }
-    .cmd-box:hover {
-      border-color: var(--border-focus);
-      color: #fff;
-    }
-    .cmd-prefix { color: var(--emerald); }
-
-    /* Telemetry Capsules Strip */
-    .telemetry-strip {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
       margin-bottom: 48px;
     }
 
-    .capsule {
-      display: flex;
+    .btn-primary-lg {
+      background: #2563eb;
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 6px;
+      border: 1px solid #3b82f6;
+      transition: background 0.15s;
+      display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-secondary);
-      background: var(--surface-1);
-      border: 1px solid var(--border);
-      padding: 6px 12px;
-      border-radius: 6px;
+    }
+    .btn-primary-lg:hover { background: #1d4ed8; }
+
+    /* Financial Overview Strip */
+    .summary-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 60px;
     }
 
-    .dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--emerald);
-      box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
-    }
-    .dot.amber { background: var(--amber); box-shadow: 0 0 6px rgba(245, 158, 11, 0.6); }
-
-    /* Interactive Terminal Window */
-    .terminal-container {
+    .summary-card {
       background: var(--surface-1);
       border: 1px solid var(--border);
       border-radius: 8px;
-      overflow: hidden;
-      margin-bottom: 80px;
-      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+      padding: 20px;
     }
 
-    .terminal-header {
-      background: var(--surface-2);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 16px;
+    .summary-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+
+    .summary-number {
+      font-family: var(--font-mono);
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .summary-sub {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* Live Executive Dashboard Preview */
+    .dashboard-preview {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 80px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+    }
+
+    .preview-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
     }
 
-    .terminal-traffic-lights {
-      display: flex;
-      gap: 6px;
-    }
-    .traffic-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #27272a;
-    }
-
-    .terminal-title {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-muted);
-      letter-spacing: 0.02em;
-    }
-
-    .terminal-body {
-      padding: 20px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      line-height: 1.7;
-      color: #e2e8f0;
-      max-height: 480px;
-      overflow-y: auto;
-    }
-
-    .t-dim { color: var(--text-muted); }
-    .t-green { color: var(--emerald); }
-    .t-blue { color: #60a5fa; }
-    .t-amber { color: var(--amber); }
-    .t-rose { color: var(--rose); }
-
-    /* Feature Grid / Core Invariants */
-    section.section-block {
-      padding: 60px 0;
-      border-top: 1px solid var(--border);
-    }
-
-    .section-eyebrow {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--blue);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 8px;
-    }
-
-    .section-title {
-      font-size: 28px;
+    .preview-title {
       font-weight: 700;
-      color: #fff;
-      letter-spacing: -0.02em;
-      margin-bottom: 12px;
-    }
-
-    .section-subtitle {
       font-size: 15px;
-      color: var(--text-secondary);
-      max-width: 680px;
-      margin-bottom: 40px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    .invariants-grid {
+    .preview-badge {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--emerald);
+      background: var(--emerald-surface);
+      border: 1px solid var(--emerald-border);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .preview-cards-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 16px;
     }
 
-    .invariant-card {
+    .preview-card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .vendor-title {
+      font-weight: 700;
+      font-size: 14px;
+      color: #fff;
+    }
+    .vendor-amount {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 14px;
+      color: #fff;
+    }
+
+    .card-reason {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    .status-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      width: fit-content;
+    }
+    .tag-cleared { background: var(--emerald-surface); color: var(--emerald); border: 1px solid var(--emerald-border); }
+    .tag-review { background: var(--amber-surface); color: var(--amber); border: 1px solid var(--amber-border); }
+    .tag-blocked { background: var(--rose-surface); color: var(--rose); border: 1px solid var(--rose-border); }
+
+    /* Core Pillars Section */
+    section.features {
+      padding: 60px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .section-eyebrow {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--blue);
+      margin-bottom: 8px;
+    }
+
+    .section-heading {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+
+    .section-desc {
+      font-size: 16px;
+      color: var(--text-secondary);
+      max-width: 680px;
+      margin-bottom: 40px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .feature-card {
       background: var(--surface-1);
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -356,151 +366,80 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      transition: border-color 0.15s ease;
-    }
-    .invariant-card:hover {
-      border-color: var(--border-focus);
     }
 
-    .card-icon-pill {
+    .feature-icon-box {
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-family: var(--font-mono);
-      font-size: 11px;
       font-weight: 700;
+      font-size: 13px;
       color: var(--blue);
-      background: var(--blue-surface);
-      border: 1px solid var(--blue-border);
-      display: inline-block;
-      width: fit-content;
-      padding: 2px 8px;
-      border-radius: 4px;
     }
 
-    .invariant-heading {
+    .feature-title {
       font-size: 16px;
       font-weight: 700;
       color: #fff;
-      letter-spacing: -0.01em;
     }
 
-    .invariant-text {
+    .feature-body {
       font-size: 13px;
       color: var(--text-secondary);
       line-height: 1.5;
     }
 
-    /* Flywheel / Revenue Flow Block */
-    .flow-box {
+    /* Founder FAQ */
+    section.faq-section {
+      padding: 60px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .faq-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 32px;
+    }
+
+    .faq-item {
       background: var(--surface-1);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 32px;
-      margin-top: 24px;
+      padding: 24px;
     }
 
-    .flow-grid-3 {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr auto 1fr;
-      gap: 16px;
-      align-items: center;
-    }
-
-    .flow-step-card {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 20px;
-    }
-
-    .step-num {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .step-title {
+    .faq-q {
       font-size: 15px;
       font-weight: 700;
       color: #fff;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
-    .step-desc {
-      font-size: 12px;
-      color: var(--text-secondary);
-      line-height: 1.4;
-    }
-
-    .flow-divider {
-      color: var(--text-dim);
-      font-size: 20px;
-      font-family: var(--font-mono);
-      text-align: center;
-    }
-
-    /* Benchmark Table */
-    .table-wrapper {
-      background: var(--surface-1);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-      margin-top: 24px;
-    }
-
-    table.benchmark-table {
-      width: 100%;
-      border-collapse: collapse;
+    .faq-a {
       font-size: 13px;
-    }
-
-    table.benchmark-table th {
-      text-align: left;
-      padding: 12px 18px;
-      background: var(--surface-2);
-      border-bottom: 1px solid var(--border);
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: var(--text-muted);
-    }
-
-    table.benchmark-table td {
-      padding: 14px 18px;
-      border-bottom: 1px solid var(--border-subtle);
       color: var(--text-secondary);
+      line-height: 1.5;
     }
-
-    table.benchmark-table tr:last-child td {
-      border-bottom: none;
-    }
-
-    .badge-metric {
-      font-family: var(--font-mono);
-      font-weight: 700;
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 4px;
-      display: inline-block;
-    }
-    .bm-green { background: var(--emerald-surface); color: var(--emerald); border: 1px solid var(--emerald-border); }
-    .bm-amber { background: var(--amber-surface); color: var(--amber); border: 1px solid var(--amber-border); }
-    .bm-rose { background: var(--rose-surface); color: var(--rose); border: 1px solid var(--rose-border); }
 
     /* Footer */
-    footer.site-footer {
+    footer.page-footer {
       border-top: 1px solid var(--border);
-      padding: 48px 0;
+      padding: 40px 0;
       margin-top: 80px;
     }
 
-    .footer-inner {
+    .footer-content {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 12px;
+      font-size: 13px;
       color: var(--text-muted);
     }
 
@@ -513,320 +452,251 @@
       color: var(--text-secondary);
       text-decoration: none;
     }
-    .footer-links a:hover {
-      color: #fff;
-    }
+    .footer-links a:hover { color: #fff; }
 
     @media (max-width: 900px) {
-      .invariants-grid { grid-template-columns: 1fr; }
-      .flow-grid-3 { grid-template-columns: 1fr; }
-      .flow-divider { display: none; }
-      .hero-title { font-size: 34px; }
+      .hero-heading { font-size: 36px; }
+      .summary-strip { grid-template-columns: 1fr 1fr; }
+      .preview-cards-grid { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr; }
+      .faq-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <!-- Top Navigation -->
-  <nav class="site-nav">
-    <div class="container nav-inner">
-      <a href="/" class="brand-link">
-        <span class="brand-symbol">CFO-ONE</span>
-        <span class="brand-pill">Track 04: Autonomous Business</span>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container nav-content">
+      <a href="/" class="brand-group">
+        <span class="brand-logo">CFO-ONE</span>
+        <span class="brand-tag">Autonomous Treasury</span>
       </a>
 
-      <div class="nav-links">
-        <a href="#invariants" class="nav-link">Architecture</a>
-        <a href="#flywheel" class="nav-link">Autonomous Loop</a>
-        <a href="#benchmark" class="nav-link">Security Benchmark</a>
-        <a href="#quickstart" class="nav-link">Quickstart</a>
-        <a href="/cockpit" class="btn-nav-primary">
-          <span>Launch Cockpit</span>
+      <div class="nav-actions">
+        <a href="#how-it-works" class="nav-link">How It Works</a>
+        <a href="#faq" class="nav-link">Founder FAQ</a>
+        <a href="/cockpit" class="btn-dashboard">
+          <span>Open CFO Dashboard</span>
           <span>→</span>
         </a>
       </div>
     </div>
   </nav>
 
-  <!-- Hero Section -->
-  <section class="hero">
+  <!-- Hero -->
+  <header class="hero">
     <div class="container">
       <div class="hero-eyebrow">
         <span>●</span>
-        <span>The Company of None // Confidential TEE Treasury</span>
+        <span>The Autonomous Business for Solo Founders & Entrepreneurs</span>
       </div>
 
-      <h1 class="hero-title">
-        Autonomous Treasury Ops.<br>
-        Enforced by Hardware.
+      <h1 class="hero-heading">
+        Run your entire corporate treasury.<br>
+        Without hiring a finance team.
       </h1>
 
       <p class="hero-desc">
-        Your AI agent clears vendor payables from a live Airwallex business account and collects B2B clearance fees cross-chain via NEAR Intents. The owner sets the spending cap, 30-day budget, and allowlist. The Intel TDX enclave enforces them. The agent never sees credentials.
+        CFO-One automatically pays routine company bills from your Airwallex business account, collects revenue globally in crypto or fiat, and distributes profits to your contributors. You set the spending limits—our hardware vault guarantees the AI never overspends.
       </p>
 
-      <div class="hero-actions">
-        <a href="/cockpit" class="btn-cta-main">
-          <span>Open Operational Cockpit</span>
+      <div class="hero-buttons">
+        <a href="/cockpit" class="btn-primary-lg">
+          <span>Open Operational Dashboard</span>
           <span>→</span>
         </a>
-        <div class="cmd-box" onclick="navigator.clipboard.writeText('npm run demo:loop')">
-          <span class="cmd-prefix">$</span>
-          <span>npm run demo:loop</span>
-          <span style="font-size: 11px; color: var(--text-dim); margin-left: 6px;">[Copy]</span>
+      </div>
+
+      <!-- Financial Status Strip -->
+      <div class="summary-strip">
+        <div class="summary-card">
+          <div class="summary-label">Corporate Reserves</div>
+          <div class="summary-number">$9,999,944.10</div>
+          <div class="summary-sub">Live Airwallex USD Checking</div>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-label">Routine Bills Auto-Paid</div>
+          <div class="summary-number" style="color: var(--emerald);">38 Paid</div>
+          <div class="summary-sub">Cloud, SaaS, and vendors cleared</div>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-label">Scams & Injections Blocked</div>
+          <div class="summary-number" style="color: var(--rose);">2 Blocked</div>
+          <div class="summary-sub">Routing swaps & invoice hacks caught</div>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-label">Automated Profit Sharing</div>
+          <div class="summary-number" style="color: var(--blue);">20% Dividend</div>
+          <div class="summary-sub">Auto-dispatched to contributors.testnet</div>
         </div>
       </div>
 
-      <!-- Real-Time Network Telemetry Strip -->
-      <div class="telemetry-strip">
-        <div class="capsule">
-          <span class="dot"></span>
-          <span>Airwallex Rails: Connected ($9,999,944.10 USD)</span>
-        </div>
-        <div class="capsule">
-          <span class="dot"></span>
-          <span>Intel TDX TEE: Hardware Attested</span>
-        </div>
-        <div class="capsule">
-          <span class="dot"></span>
-          <span>NEAR Testnet: longdata4360.testnet</span>
-        </div>
-        <div class="capsule">
-          <span class="dot amber"></span>
-          <span>Contributors: contributors.testnet (20% Dividends)</span>
-        </div>
-      </div>
-
-      <!-- Live Terminal Snapshot -->
-      <div class="terminal-container">
-        <div class="terminal-header">
-          <div class="terminal-traffic-lights">
-            <span class="traffic-dot"></span>
-            <span class="traffic-dot"></span>
-            <span class="traffic-dot"></span>
+      <!-- Interactive Executive Dashboard Preview -->
+      <div class="dashboard-preview">
+        <div class="preview-header">
+          <div class="preview-title">
+            <span>Live Accounts Payable Stream</span>
+            <span class="preview-badge">Autonomous Mode</span>
           </div>
-          <span class="terminal-title">demo:loop — Autonomous Commercial Cycle (NEAR Testnet)</span>
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--emerald);">0 errors</span>
+          <span style="font-size: 12px; color: var(--text-muted);">Real-time Airwallex & Enclave Protection</span>
         </div>
-        <div class="terminal-body">
-<span class="t-dim">======================================================================</span>
-  <span class="t-blue">CFO-ONE: 2-MINUTE AUTONOMOUS BUSINESS DEMO LOOP (NEAR TESTNET)</span>
-  Track 04: Autonomous Business — "The company of one, or none."
-<span class="t-dim">======================================================================</span>
 
-<span class="t-green">1. REVENUE INFLOW: CROSS-CHAIN PAYMENT VIA NEAR INTENTS</span>
-   Client purchase: Invoice clearance for Vendor Invoice #INV-2026-901
-   • Intent Generated:  <span class="t-blue">intent_1794583888537_z8ps2</span>
-   • Origin Asset:      <span class="t-green">25.0125 USDC</span> on <span class="t-blue">BASE</span>
-   • Deposit Address:   0x71C2fj0drgproBaseIntent
-   • Settling to Agent: <span class="t-blue">longdata4360.testnet</span> on NEAR
-   ✓ <span class="t-green">INTENT SETTLED ON-CHAIN! Received $25.00 into Treasury.</span>
+        <div class="preview-cards-grid">
+          <!-- Card 1: Routine Auto-Paid -->
+          <div class="preview-card">
+            <div class="card-top">
+              <span class="vendor-title">Vercel Inc</span>
+              <span class="vendor-amount">$42.00</span>
+            </div>
+            <div class="card-reason">
+              Monthly hosting subscription. Bank account matched verified Airwallex record. Under $300 threshold.
+            </div>
+            <span class="status-tag tag-cleared">✓ AUTO-PAID</span>
+          </div>
 
-<span class="t-green">2. PROGRAMMATIC REVENUE SHARING (AUTOMATED DIVIDEND DISPATCH)</span>
-   [RevenueSplitter] Programmatic revenue split executed:
-     • Retained Treasury (70%): <span class="t-blue">$17.50</span>
-     • Contributor Dividends (20%): <span class="t-green">$5.00 -> contributors.testnet</span>
-     • Liquidity Reserve (10%): <span class="t-dim">$2.50</span>
-   ✓ <span class="t-green">Dividends dispatched automatically to contributors.testnet on NEAR Testnet!</span>
+          <!-- Card 2: Escalated for 1-Click Owner Signoff -->
+          <div class="preview-card" style="border-color: rgba(245, 158, 11, 0.3);">
+            <div class="card-top">
+              <span class="vendor-title">Summit Legal LLP</span>
+              <span class="vendor-amount">$850.00</span>
+            </div>
+            <div class="card-reason">
+              Q4 Corporate Counsel Retainer. Exceeds $300 auto-pay rule. Queued for your 1-click approval.
+            </div>
+            <span class="status-tag tag-review">⚠ NEEDS YOUR APPROVAL</span>
+          </div>
 
-<span class="t-green">3. PRODUCT DELIVERY: CONFIDENTIAL TEE INVOICE AUDIT</span>
-   Client submitted invoice containing an adversarial prompt injection in memo.
-   ✓ Extracted Vendor:   Vercel Inc
-   ✓ Invoice Amount:     $42.00
-   ✓ Layer 1 Verdict:    <span class="t-amber">[ASK_OWNER - ESCALATED]</span>
-   ✓ Intercept Reason:   Suspicious Instruction-like Text: Imperative directive ("SYSTEM-OVERRIDE...").
-   ✓ <span class="t-green">Capital protected inside Intel TDX Enclave. Zero bank loss.</span>
-
-<span class="t-green">4. AUTONOMOUS PROCUREMENT (AI INFERENCE BUDGETING)</span>
-   [InferenceBudget] Agent procured $0.0450 of inference (near-ai/llama-3.1-70b).
-   ✓ Remaining Daily Inference Budget: <span class="t-blue">$24.96 / $25.00</span>
+          <!-- Card 3: Scams / BEC Blocked -->
+          <div class="preview-card" style="border-color: rgba(244, 63, 94, 0.3);">
+            <div class="card-top">
+              <span class="vendor-title">Figma Inc</span>
+              <span class="vendor-amount">$45.00</span>
+            </div>
+            <div class="card-reason">
+              Routing Number altered from 021000089 to unverified account. Intercepted as suspected email fraud.
+            </div>
+            <span class="status-tag tag-blocked">✕ FRAUD INTERCEPTED</span>
+          </div>
         </div>
       </div>
     </div>
-  </section>
+  </header>
 
-  <!-- Section 1: Architectural Invariants -->
-  <section class="section-block" id="invariants">
+  <!-- How It Works for Founders -->
+  <section class="features" id="how-it-works">
     <div class="container">
-      <div class="section-eyebrow">Zero Trust Defense</div>
-      <h2 class="section-title">The Three Architectural Invariants</h2>
-      <p class="section-subtitle">
-        Giving an LLM direct API access to corporate bank accounts or private keys is financial suicide. CFO-One decouples intelligence from execution.
+      <div class="section-eyebrow">Zero Operational Overhead</div>
+      <h2 class="section-heading">How CFO-One Works for You</h2>
+      <p class="section-desc">
+        Designed for founders who want to focus on shipping products, not manually reviewing invoices, checking routing numbers, or doing monthly dividend spreadsheets.
       </p>
 
-      <div class="invariants-grid">
-        <div class="invariant-card">
-          <span class="card-icon-pill">TIER 01</span>
-          <h3 class="invariant-heading">"LLM Extracts, Code Decides"</h3>
-          <p class="invariant-text">
-            The AI acts purely as an extraction engine, translating messy unstructured invoices into structured JSON. It is never given deciding authority. Deterministic code tests for duplicate invoices, creeping price inflation, and imperative prompt injection directives.
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon-box">01</div>
+          <h3 class="feature-title">Hands-Free Bill Pay</h3>
+          <p class="feature-body">
+            Invoices arriving via email, PDF, or portal are reviewed automatically. Normal SaaS subscriptions and recurring contractor bills within your budget are paid on time without disturbing you.
           </p>
         </div>
 
-        <div class="invariant-card">
-          <span class="card-icon-pill">TIER 02</span>
-          <h3 class="invariant-heading">Intel TDX Enclave Enforcement</h3>
-          <p class="invariant-text">
-            Private credentials never touch the AI. Bank API tokens and signing keys are sealed inside an Intel TDX hardware enclave. The enclave physically refuses any single payment exceeding $1,000, and emits a cryptographic remote attestation quote for every decision.
+        <div class="feature-card">
+          <div class="feature-icon-box">02</div>
+          <h3 class="feature-title">Bank-Grade Scam Defense</h3>
+          <p class="feature-body">
+            Business Email Compromise (BEC) costs companies billions. If a compromised vendor email sends an invoice with a changed bank account, CFO-One catches the discrepancy and freezes the payment.
           </p>
         </div>
 
-        <div class="invariant-card">
-          <span class="card-icon-pill">TIER 03</span>
-          <h3 class="invariant-heading">Bank Detail Decoupling</h3>
-          <p class="invariant-text">
-            The agent never pays the bank account printed on an invoice. Inbound invoices are diff-checked against pre-approved Airwallex beneficiaries. If an attacker swaps bank routing details on a real vendor invoice (BEC), the transaction is blocked immediately.
+        <div class="feature-card">
+          <div class="feature-icon-box">03</div>
+          <h3 class="feature-title">Physical Spending Locks</h3>
+          <p class="feature-body">
+            You set the spending limit (e.g. max $1,000 per bill, $3,500 monthly budget). Even if the AI gets tricked or experiences a bug, the Intel TDX hardware enclave physically blocks any payout above your limit.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">04</div>
+          <h3 class="feature-title">Global Client Intake</h3>
+          <p class="feature-body">
+            Clients pay your business in any currency or token (Base USDC, Solana, Ethereum, or NEAR). Cross-chain solvers route funds directly into your company treasury.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">05</div>
+          <h3 class="feature-title">Automated Profit Sharing</h3>
+          <p class="feature-body">
+            Set your profit split once (e.g. 70% treasury, 20% team dividends, 10% reserve). Every time customer revenue arrives, dividends are calculated and sent automatically on-chain.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">06</div>
+          <h3 class="feature-title">One-Click Emergency Stop</h3>
+          <p class="feature-body">
+            Need to pause operations while traveling or during a rebrand? One click on the Emergency Kill Switch freezes all disbursements instantly inside the hardware vault.
           </p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Section 2: Autonomous Business Flywheel -->
-  <section class="section-block" id="flywheel">
+  <!-- Founder FAQ -->
+  <section class="faq-section" id="faq">
     <div class="container">
-      <div class="section-eyebrow">Track 04: Autonomous Business</div>
-      <h2 class="section-title">The Self-Sustaining Economic Flywheel</h2>
-      <p class="section-subtitle">
-        A complete company operating with zero human headcount: taking in multi-chain client fees, dispatching automated dividends, and procuring its own operational resources.
-      </p>
+      <div class="section-eyebrow">Clear Guarantees</div>
+      <h2 class="section-heading">Frequently Asked Questions</h2>
+      <p class="section-desc">Straightforward answers about custody, security, and operations.</p>
 
-      <div class="flow-box">
-        <div class="flow-grid-3">
-          <div class="flow-step-card">
-            <div class="step-num">Step 01</div>
-            <div class="step-title">Cross-Chain Intake</div>
-            <div class="step-desc">
-              Clients purchase clearance services in any token (Base USDC, Solana USDC, Ethereum, Arbitrum, or NEAR) via NEAR Intents / 1Click API.
-            </div>
-          </div>
-
-          <div class="flow-divider">→</div>
-
-          <div class="flow-step-card" style="border-color: rgba(16, 185, 129, 0.3);">
-            <div class="step-num" style="color: var(--emerald);">Step 02</div>
-            <div class="step-title" style="color: var(--emerald);">Automated 70/20/10 Split</div>
-            <div class="step-desc">
-              Programmatic revenue sharing: 70% retained in Treasury, 20% auto-dispatched to <code>contributors.testnet</code>, and 10% held as liquidity reserve.
-            </div>
-          </div>
-
-          <div class="flow-divider">→</div>
-
-          <div class="flow-step-card">
-            <div class="step-num">Step 03</div>
-            <div class="step-title">Autonomous Operations</div>
-            <div class="step-desc">
-              The agent procures its own AI compute under a $25/day limit and settles vendor payables across live banking rails via Airwallex.
-            </div>
+      <div class="faq-grid">
+        <div class="faq-item">
+          <div class="faq-q">Can the AI accidentally drain my bank account?</div>
+          <div class="faq-a">
+            No. Your bank credentials are kept inside a sealed Intel TDX hardware enclave. The enclave enforces a hard spending limit ($1,000 max per invoice) and an approved recipient list. The AI cannot change these rules or see your private keys.
           </div>
         </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- Section 3: Measured Security Benchmark -->
-  <section class="section-block" id="benchmark">
-    <div class="container">
-      <div class="section-eyebrow">Empirical Verification</div>
-      <h2 class="section-title">Measured Security Benchmark (40 Test Invoices)</h2>
-      <p class="section-subtitle">
-        Evaluated against 40 real-world invoice vectors: 15 legitimate SaaS bills, 15 open adversarial attacks, and 10 held-out unseen vectors.
-      </p>
+        <div class="faq-item">
+          <div class="faq-q">What happens when a large or unusual invoice arrives?</div>
+          <div class="faq-a">
+            Any invoice over your review threshold (e.g. $300) or from an unrecognized payee is escalated to your dashboard. You review the vendor details and approve or decline with a single click.
+          </div>
+        </div>
 
-      <div class="table-wrapper">
-        <table class="benchmark-table">
-          <thead>
-            <tr>
-              <th>Evaluation Category</th>
-              <th>Target Behavior</th>
-              <th>Measured Result</th>
-              <th>Security Guarantee</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style="color: #fff; font-weight: 600;">Legitimate Recurring Throughput</td>
-              <td>Frictionless automated payment (ALLOW)</td>
-              <td><span class="badge-metric bm-green">10 / 15 (67%)</span></td>
-              <td>Routine bills under $300 auto-cleared</td>
-            </tr>
-            <tr>
-              <td style="color: #fff; font-weight: 600;">High-Value & New Payees</td>
-              <td>Escalated for human review (ASK_OWNER)</td>
-              <td><span class="badge-metric bm-amber">5 / 15 (33%)</span></td>
-              <td>Retainers & new vendors require co-sign</td>
-            </tr>
-            <tr>
-              <td style="color: #fff; font-weight: 600;">BEC Bank Routing Swaps</td>
-              <td>Intercepted at Layer 1 Bank Diff</td>
-              <td><span class="badge-metric bm-green">100% Intercepted</span></td>
-              <td>Mismatched routing numbers refused</td>
-            </tr>
-            <tr>
-              <td style="color: #fff; font-weight: 600;">Adversarial Prompt Injections</td>
-              <td>Screened & escalated to owner inbox</td>
-              <td><span class="badge-metric bm-green">100% Caught</span></td>
-              <td>Imperative directives treated as data</td>
-            </tr>
-            <tr>
-              <td style="color: #fff; font-weight: 600;">Hardware Cap Breach ($12,000 AWS)</td>
-              <td>Physically blocked inside Intel TDX TEE</td>
-              <td><span class="badge-metric bm-green">100% Enforced</span></td>
-              <td>Hardware refuses signatures > $1,000</td>
-            </tr>
-            <tr>
-              <td style="color: #fff; font-weight: 600;">False Negatives (Adversarial Leaks)</td>
-              <td>Zero attacks allowed through</td>
-              <td><span class="badge-metric bm-green">0 / 25 (0.00%)</span></td>
-              <td>Zero bank capital lost</td>
-            </tr>
-            <tr>
-              <td style="color: #fff; font-weight: 600;">Held-Out Unseen Test Set</td>
-              <td>Unseen attacks detected live</td>
-              <td><span class="badge-metric bm-green">10 / 10 (100%)</span></td>
-              <td>Generalizes beyond training set</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
+        <div class="faq-item">
+          <div class="faq-q">How does this help during tax season or audit?</div>
+          <div class="faq-a">
+            Every transaction is logged with timestamps, counterparty, and cryptographic proof of authorization. With one click, you can export a clean, GAAP-compliant CSV journal ready for your CPA or tax advisor.
+          </div>
+        </div>
 
-  <!-- Section 4: Quickstart -->
-  <section class="section-block" id="quickstart">
-    <div class="container">
-      <div class="section-eyebrow">Developer Ready</div>
-      <h2 class="section-title">Run in Under 60 Seconds</h2>
-      <p class="section-subtitle">
-        Fully verified with zero simulated mocks. Connects live to Airwallex Demo API, NEAR Testnet, and Intel TDX enclaves.
-      </p>
-
-      <div style="background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px; padding: 24px; font-family: var(--font-mono); font-size: 13px; line-height: 1.8;">
-        <div style="color: var(--text-muted);"># 1. Clone & check live connectivity (Airwallex Demo + NEAR Testnet)</div>
-        <div><span style="color: var(--emerald);">$</span> npm install && npm run status</div>
-        <div style="color: var(--text-muted); margin-top: 12px;"># 2. Run the 2-minute autonomous commercial loop (Track 04)</div>
-        <div><span style="color: var(--emerald);">$</span> npm run demo:loop</div>
-        <div style="color: var(--text-muted); margin-top: 12px;"># 3. Launch the high-density Web Cockpit with live ledger</div>
-        <div><span style="color: var(--emerald);">$</span> npm run web</div>
-        <div style="color: var(--text-muted); margin-top: 12px;"># 4. Run the full test suite (16 tests, 2 suites)</div>
-        <div><span style="color: var(--emerald);">$</span> npm test</div>
+        <div class="faq-item">
+          <div class="faq-q">Do I need to know how to code to use this?</div>
+          <div class="faq-a">
+            Not at all. You control everything through a clean, high-level dashboard. You set your spending caps in plain dollars, approve flagged bills with one click, and watch your treasury balances in real time.
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- Footer -->
-  <footer class="site-footer">
-    <div class="container footer-inner">
+  <footer class="page-footer">
+    <div class="container footer-content">
       <div>
-        <span style="font-family: var(--font-mono); font-weight: 700; color: #fff;">CFO-ONE</span>
-        <span style="color: var(--text-dim); margin-left: 8px;">Autonomous Treasury for the Company of None</span>
+        <span style="font-weight: 700; color: #fff;">CFO-ONE</span>
+        <span style="margin-left: 8px;">Treasury Operations for the Company of None</span>
       </div>
 
       <div class="footer-links">
-        <a href="/cockpit">Open Cockpit</a>
+        <a href="/cockpit">Open Dashboard</a>
         <a href="https://testnet.nearblocks.io/address/longdata4360.testnet" target="_blank">NEAR Explorer ↗</a>
         <a href="https://api-demo.airwallex.com" target="_blank">Airwallex API ↗</a>
-        <a href="https://github.com/hng-subutai/enclave-cfo" target="_blank">GitHub ↗</a>
       </div>
     </div>
   </footer>

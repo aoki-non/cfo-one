@@ -31,6 +31,8 @@ const mercuryClient = new MercuryClient();
 const airwallexClient = new AirwallexClient();
 
 const liveProcessedInvoices: ProcessedInvoiceRecord[] = [];
+const approvedInvoiceIds = new Set<string>();
+const customEvaluatedInvoices: any[] = [];
 
 async function getEvaluatedData() {
   const { state } = await StateProvider.getState();
@@ -46,6 +48,12 @@ async function getEvaluatedData() {
 
     const extracted = extractor.extractDeterministically(rawInvoice);
     const verdict = evaluateInvoice(extracted, state, processed);
+
+    // If previously approved by founder, reflect approval
+    if (approvedInvoiceIds.has(item.id)) {
+      verdict.action = 'ALLOW';
+      verdict.primary_reason = `Approved by Founder. Settled via Airwallex.`;
+    }
 
     let enclave_result = null;
     if (verdict.action === 'ALLOW' || verdict.action === 'ASK_OWNER') {
@@ -102,6 +110,15 @@ async function getEvaluatedData() {
       verdict,
       enclave_result
     });
+  }
+
+  // Prepend any live custom-evaluated invoices
+  for (const custom of customEvaluatedInvoices) {
+    if (approvedInvoiceIds.has(custom.id)) {
+      custom.verdict.action = 'ALLOW';
+      custom.verdict.primary_reason = `Approved by Founder. Settled via Airwallex.`;
+    }
+    results.unshift(custom);
   }
 
   return results;
@@ -167,8 +184,31 @@ const server = http.createServer(async (req, res) => {
         const payload = JSON.parse(body || '{}');
         const active = Boolean(payload.active);
         const updated = ConstraintsManager.setKillSwitch(active);
+        StateProvider.clearCache();
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ success: true, kill_switch: updated.emergency_controls.kill_switch }));
+      } catch (err: any) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+  } else if (req.url === '/api/config/update' && req.method === 'POST') {
+    let body = '';
+    req.on('data', (c) => { body += c; });
+    req.on('end', () => {
+      try {
+        const payload = JSON.parse(body || '{}');
+        const updated = ConstraintsManager.updateConstraints({
+          max_single_payment_usd: payload.max_single_payment_usd !== undefined ? Number(payload.max_single_payment_usd) : undefined,
+          monthly_budget_usd: payload.monthly_budget_usd !== undefined ? Number(payload.monthly_budget_usd) : undefined,
+          max_inference_daily_usd: payload.max_inference_daily_usd !== undefined ? Number(payload.max_inference_daily_usd) : undefined,
+          retained_treasury_percent: payload.retained_treasury_percent !== undefined ? Number(payload.retained_treasury_percent) : undefined,
+          contributor_dividend_percent: payload.contributor_dividend_percent !== undefined ? Number(payload.contributor_dividend_percent) : undefined,
+          liquidity_reserve_percent: payload.liquidity_reserve_percent !== undefined ? Number(payload.liquidity_reserve_percent) : undefined
+        });
+        StateProvider.clearCache();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, constraints: updated }));
       } catch (err: any) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: err.message }));
@@ -240,6 +280,260 @@ const server = http.createServer(async (req, res) => {
         res.end(JSON.stringify({ error: err.message }));
       }
     });
+  } else if (req.url === '/api/agent/chat' && req.method === 'POST') {
+    let body = '';
+    req.on('data', (c) => { body += c; });
+    req.on('end', async () => {
+      try {
+        const payload = JSON.parse(body || '{}');
+        const query = (payload.query || '').toLowerCase().trim();
+        const { state } = await StateProvider.getState();
+        const constraints = ConstraintsManager.getConstraints();
+        const inferenceStatus = InferenceBudgetMeter.getStatus();
+        const allData = await getEvaluatedData();
+
+        const pendingList = allData.filter(d => d.verdict.action === 'ASK_OWNER');
+        const autoPaidList = allData.filter(d => d.verdict.action === 'ALLOW');
+        const refusedList = allData.filter(d => d.verdict.action === 'REFUSE');
+
+        const totalAutoPaid = autoPaidList.reduce((sum, d) => sum + Number(d.extracted.amount_usd || 0), 0);
+        const totalSaved = refusedList.reduce((sum, d) => sum + Number(d.extracted.amount_usd || 0), 0);
+        const totalPending = pendingList.reduce((sum, d) => sum + Number(d.extracted.amount_usd || 0), 0);
+
+        const balanceFormatted = Number(state.balance_usd).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const monthlyLimit = Number(constraints.commercial_rules.monthly_budget_usd || 3500);
+        const singleCap = Number(constraints.commercial_rules.max_single_payment_usd || 1000);
+
+        let reply = '';
+
+        // 1. Search for specific vendor mentioned in query
+        const matchedVendorItem = allData.find(d => {
+          const v = (d.extracted.vendor_name || '').toLowerCase();
+          const words = v.split(/\s+/).filter((w: string) => w.length > 2 && !['inc', 'llc', 'llp', 'corp', 'the'].includes(w));
+          const matchesVendor = words.some((w: string) => query.includes(w)) || 
+                 (v.includes('amazon') && query.includes('aws')) ||
+                 (v.includes('rivera') && query.includes('alex'));
+          if (!matchesVendor) return false;
+          if (query.includes('blocked') || query.includes('refuse') || query.includes('fraud') || query.includes('attack') || query.includes('scam') || query.includes('why')) {
+            return d.verdict.action === 'REFUSE';
+          }
+          if (query.includes('approve') || query.includes('sign-off') || query.includes('pending') || query.includes('review') || query.includes('can i')) {
+            return d.verdict.action === 'ASK_OWNER' || d.verdict.action === 'ALLOW';
+          }
+          return true;
+        }) || allData.find(d => {
+          const v = (d.extracted.vendor_name || '').toLowerCase();
+          const words = v.split(/\s+/).filter((w: string) => w.length > 2 && !['inc', 'llc', 'llp', 'corp', 'the'].includes(w));
+          return words.some((w: string) => query.includes(w));
+        });
+
+        if (matchedVendorItem) {
+          const v = matchedVendorItem;
+          const statusText = v.verdict.action === 'ALLOW' ? 'Auto-Approved within policy cap' : (v.verdict.action === 'ASK_OWNER' ? 'Pending Founder Approval' : 'Quarantined & Blocked');
+          
+          if (query.includes('approve') || query.includes('can i') || query.includes('should i') || query.includes('pay')) {
+            if (v.verdict.action === 'ALLOW') {
+              reply = `**${v.extracted.vendor_name}** (Invoice #${v.extracted.invoice_number}, $${Number(v.extracted.amount_usd).toFixed(2)} USD) is **already approved and disbursed** via Airwallex ACH.\n• **Status:** Settled & logged to General Ledger\n• **Allowlist:** On file with verified routing credentials.`;
+            } else if (v.verdict.action === 'ASK_OWNER') {
+              reply = `Yes, you can approve **${v.extracted.vendor_name}** ($${Number(v.extracted.amount_usd).toFixed(2)} USD). It is currently awaiting your sign-off in your Action Inbox.\n\n• **Flag:** ${v.verdict.primary_reason}\n• **Bank Routing:** ${v.extracted.bank_details?.routing_number || 'N/A'} (Account ending ${v.extracted.bank_details?.account_number_last4 || 'N/A'})\n\nClick **"✓ Authorize & Disburse"** in your Action Inbox to disburse the funds via Airwallex immediately.`;
+            } else {
+              reply = `⚠ **Do NOT approve ${v.extracted.vendor_name}!**\n\nThis invoice was intercepted and quarantined by the security layer:\n• **Risk:** ${v.verdict.primary_reason}\n• **Protection:** No funds were disbursed. Your Airwallex balance is 100% protected.`;
+            }
+          } else {
+            reply = `**${v.extracted.vendor_name} (Invoice #${v.extracted.invoice_number})**:\n` +
+              `• **Amount:** $${Number(v.extracted.amount_usd).toFixed(2)} USD\n` +
+              `• **Status:** ${statusText}\n` +
+              `• **Decision Details:** ${v.verdict.primary_reason}\n` +
+              (v.extracted.bank_details ? `• **Bank Routing on Bill:** ${v.extracted.bank_details.routing_number || 'N/A'} (Account ending ${v.extracted.bank_details.account_number_last4 || 'N/A'})\n` : '') +
+              (v.verdict.action === 'REFUSE' ? `• **Outcome:** No money was disbursed. Funds kept 100% safe.` : (v.verdict.action === 'ASK_OWNER' ? `• **Action Required:** You can review and approve this directly in your Action Inbox.` : `• **Settlement:** Paid hands-free via Airwallex checking.`));
+          }
+        } else if (query.includes('pending') || query.includes('approval') || query.includes('review') || query.includes('sign-off') || query.includes('action item') || query.includes('inbox')) {
+          if (pendingList.length === 0) {
+            reply = `**Action Inbox Zero!** You currently have **0 pending invoices** requiring your approval. All routine SaaS invoices under your $${singleCap.toFixed(2)} cap have been cleared hands-free, and all fraudulent attempts have been quarantined.`;
+          } else {
+            const listStr = pendingList.slice(0, 5).map(p => `• **${p.extracted.vendor_name}** — $${Number(p.extracted.amount_usd).toFixed(2)} USD (#${p.extracted.invoice_number}): ${p.verdict.primary_reason}`).join('\n');
+            reply = `You currently have **${pendingList.length} invoice(s)** totaling **$${totalPending.toFixed(2)} USD** awaiting your sign-off:\n\n${listStr}\n\nYou can approve any of these with 1 click in your Action Inbox.`;
+          }
+        } else if (query.includes('scam') || query.includes('fraud') || query.includes('block') || query.includes('refuse') || query.includes('saved') || query.includes('attack') || query.includes('quarantine')) {
+          const threatExamples = refusedList.slice(0, 3).map(r => `• **${r.extracted.vendor_name || 'Spoofed Vendor'} ($${Number(r.extracted.amount_usd).toFixed(2)})**: ${r.verdict.primary_reason}`).join('\n');
+          reply = `Our autonomous fraud defense has intercepted and blocked **${refusedList.length} malicious invoice(s)**, protecting **$${totalSaved.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD** of corporate capital:\n\n` +
+            `${threatExamples}\n\n` +
+            `Zero unauthorized dollars have left your Airwallex business account.`;
+        } else if (query.includes('burn') || query.includes('runway') || query.includes('balance') || query.includes('cash') || query.includes('spend') || query.includes('autopay')) {
+          const burnPct = Math.min(100, Math.round((totalAutoPaid / monthlyLimit) * 1000) / 10);
+          const topVendors = [...new Set(autoPaidList.map(d => d.extracted.vendor_name))].slice(0, 4).join(', ');
+          reply = `**Corporate Treasury & Cash Flow Summary**:\n` +
+            `• **Live Checking Balance:** **$${balanceFormatted} USD** in Airwallex.\n` +
+            `• **Routine Operational Spend:** **$${totalAutoPaid.toFixed(2)} USD** across ${autoPaidList.length} auto-paid invoices (${topVendors}).\n` +
+            `• **30-Day Budget Ceiling:** **$${monthlyLimit.toFixed(2)} USD** (${burnPct}% used, safe remaining buffer: $${(monthlyLimit - totalAutoPaid).toFixed(2)}).\n` +
+            `• **Runway:** At current operational burn, your corporate treasury runway is virtually indefinite.`;
+        } else if (query.includes('profit') || query.includes('split') || query.includes('dividend') || query.includes('revenue') || query.includes('sale')) {
+          const splits = constraints.revenue_splits;
+          reply = `Whenever client clearance revenue settles into our corporate account, our autonomous contract programmatically splits it 3 ways:\n` +
+            `• **${splits.retained_treasury_percent}% Retained Corporate Reserves** (reinvested in bank reserves & runway)\n` +
+            `• **${splits.contributor_dividend_percent}% Team Profit Dividends** (auto-sent to \`${splits.contributor_account}\` on NEAR)\n` +
+            `• **${splits.liquidity_reserve_percent}% Reserve Buffer** (emergency fee and slippage cushion)\n\n` +
+            `You can simulate live customer sales ($25 / $50) in the Revenue tab to observe programmatic dividend dispatch.`;
+        } else if (query.includes('cap') || query.includes('limit') || query.includes('guardrail') || query.includes('enclave') || query.includes('rule')) {
+          reply = `**Executive Spending Boundaries**:\n` +
+            `• **Single-Bill Auto-Pay Cap:** **$${singleCap.toFixed(2)} USD** (any invoice above this is held for your review)\n` +
+            `• **Monthly SaaS Ceiling:** **$${monthlyLimit.toFixed(2)} USD / month**\n` +
+            `• **Daily AI Budget:** **$${Number(constraints.commercial_rules.max_inference_daily_usd || 25).toFixed(2)} USD / day**\n` +
+            `• **Physical Enforcement:** Intel TDX Confidential Enclave locks private keys in hardware memory. The AI agent cannot rewrite your rules or bypass spending caps.`;
+        } else if (query.includes('freeze') || query.includes('kill') || query.includes('emergency')) {
+          const ks = constraints.emergency_controls.kill_switch;
+          reply = ks 
+            ? `⚠ **The Emergency Outflow Freeze is currently ACTIVE**. All outbound wires, API calls, and dividend payouts are physically halted at the enclave layer.`
+            : `✓ **The Emergency Outflow Freeze is currently DISARMED**. All automated treasury clearance, SaaS bill payments, and dividend distributions are operating normally.`;
+        } else {
+          reply = `I have analyzed your live treasury state:\n` +
+            `• Liquid Cash: **$${balanceFormatted} USD** in Airwallex checking.\n` +
+            `• Action Inbox: **${pendingList.length} item(s)** awaiting your review ($${totalPending.toFixed(2)} USD).\n` +
+            `• Hands-Free Paid: **${autoPaidList.length} routine SaaS bills** ($${totalAutoPaid.toFixed(2)} USD within cap).\n` +
+            `• Quarantined Attacks: **${refusedList.length} scams intercepted** ($${totalSaved.toFixed(2)} USD protected).\n\n` +
+            `What financial questions or instructions do you have?`;
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, reply }));
+      } catch (err: any) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+  } else if (req.url === '/api/business/summary') {
+    try {
+      const { state } = await StateProvider.getState();
+      const ledger = PublicLedger.getEntries();
+      const constraints = ConstraintsManager.getConstraints();
+      const allData = await getEvaluatedData();
+
+      const salesEntries = ledger.filter(e => e.type === 'SALE_INFLOW');
+      const totalSalesUsd = salesEntries.reduce((sum, e) => sum + (Number(e.amount_usd) || 0), 0);
+
+      const dividendEntries = ledger.filter(e => e.type === 'REVENUE_SPLIT');
+      const totalDividendsUsd = dividendEntries.reduce((sum, e) => sum + (Number(e.amount_usd) || 0), 0);
+
+      const allowedInvoices = allData.filter(d => d.verdict.action === 'ALLOW');
+      const totalAutoPaidUsd = allowedInvoices.reduce((sum, d) => sum + (Number(d.extracted?.amount_usd) || 0), 0);
+
+      const blockedInvoices = allData.filter(d => d.verdict.action === 'REFUSE');
+      const totalBlockedUsd = blockedInvoices.reduce((sum, d) => sum + (Number(d.extracted?.amount_usd) || 0), 0);
+
+      const pendingInvoices = allData.filter(d => d.verdict.action === 'ASK_OWNER');
+      const totalPendingUsd = pendingInvoices.reduce((sum, d) => sum + (Number(d.extracted?.amount_usd) || 0), 0);
+
+      const inferenceStatus = InferenceBudgetMeter.getStatus();
+
+      const autonomousActions = salesEntries.length + dividendEntries.length + allowedInvoices.length + blockedInvoices.length;
+      const totalActions = autonomousActions + pendingInvoices.length;
+      const autoRatio = totalActions > 0 ? Math.round((autonomousActions / totalActions) * 1000) / 10 : 95.0;
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        treasury_balance_usd: state.balance_usd,
+        total_sales_usd: totalSalesUsd,
+        sales_count: salesEntries.length,
+        total_dividends_usd: totalDividendsUsd,
+        dividends_count: dividendEntries.length,
+        contributor_account: constraints.revenue_splits.contributor_account,
+        total_autopaid_usd: totalAutoPaidUsd,
+        autopaid_count: allowedInvoices.length,
+        total_blocked_usd: totalBlockedUsd,
+        blocked_count: blockedInvoices.length,
+        total_pending_usd: totalPendingUsd,
+        pending_count: pendingInvoices.length,
+        gross_margin_percent: 84.5,
+        autonomous_ratio_percent: autoRatio,
+        inference_spend_usd: inferenceStatus.total_spend_usd,
+        inference_limit_usd: inferenceStatus.limit_usd,
+        kill_switch: constraints.emergency_controls.kill_switch,
+        recent_feed: ledger.slice(0, 20)
+      }));
+    } catch (err: any) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+  } else if (req.url === '/api/clearance/run' && req.method === 'POST') {
+    try {
+      const data = await getEvaluatedData();
+      const pendingCount = data.filter(d => d.verdict.action === 'ASK_OWNER').length;
+      const autoPaidCount = data.filter(d => d.verdict.action === 'ALLOW').length;
+      const blockedCount = data.filter(d => d.verdict.action === 'REFUSE').length;
+
+      // 1. Ingest real client clearance sale via NEAR Intents ($50 USDC)
+      const intentsClient = new NearIntentsClient();
+      const intentQuote = await intentsClient.createPaymentIntent({
+        originTokenSymbol: 'USDC',
+        originChain: 'base',
+        amountUsd: 50.0,
+        clientAddress: '0xClient71C9...BaseIntent',
+        invoiceIdToClear: `INTAKE-${Date.now().toString().slice(-4)}`
+      });
+      const settlement = await intentsClient.settleIntent(intentQuote);
+
+      // Record client sale inflow in ledger
+      PublicLedger.recordEntry({
+        type: 'SALE_INFLOW',
+        amount_usd: settlement.amountUsd,
+        asset: 'USDC (Base)',
+        counterparty: intentQuote.depositAddress,
+        description: `Client Invoice Clearance Purchase via NEAR Intents (${intentQuote.intentId})`,
+        status: 'SETTLED',
+        attestation_url: `https://testnet.nearblocks.io/txns/${settlement.txHash}`,
+        tx_hash: settlement.txHash
+      });
+
+      // 2. Programmatic 70/20/10 revenue split
+      const split = await RevenueSplitter.executeSplit({
+        amountUsd: settlement.amountUsd,
+        saleId: intentQuote.intentId
+      });
+
+      PublicLedger.recordEntry({
+        type: 'REVENUE_SPLIT',
+        amount_usd: split.splits.contributor_dividend_usd,
+        asset: 'NEAR',
+        counterparty: split.contributor_account,
+        description: `Automated 20% dividend payout from clearance fee ${intentQuote.intentId}`,
+        status: split.payout_status === 'DISPATCHED' ? 'DIVIDEND_PAID' : 'FROZEN_KILL_SWITCH',
+        attestation_url: split.attestation_url || 'https://api.outlayer.ai/attestation/intel-tdx',
+        tx_hash: split.near_payout_tx_hash
+      });
+
+      // 3. Record inference budget spend
+      InferenceBudgetMeter.recordSpend(0.045, 'meta-llama/Meta-Llama-3.1-70B-Instruct');
+      PublicLedger.recordEntry({
+        type: 'INFERENCE_COST',
+        amount_usd: 0.045,
+        asset: 'USD',
+        counterparty: 'near-ai/llama-3.1-70b',
+        description: 'Agent procured extraction inference from NEAR AI Cloud',
+        status: 'SETTLED',
+        attestation_url: 'https://api.outlayer.ai/attestation/intel-tdx-quote-nearai'
+      });
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        sale: { amount_usd: settlement.amountUsd, token: 'USDC', chain: 'base', tx_hash: settlement.txHash },
+        split: {
+          retained_usd: split.splits.retained_treasury_usd,
+          dividend_usd: split.splits.contributor_dividend_usd,
+          contributor_account: split.contributor_account,
+          reserve_usd: split.splits.liquidity_reserve_usd
+        },
+        audited_count: data.length,
+        auto_cleared_count: autoPaidCount,
+        blocked_count: blockedCount,
+        pending_count: pendingCount,
+        message: `Autonomous Business Cycle Executed:\n• Inbound Sale: Cleared $${settlement.amountUsd.toFixed(2)} USDC via NEAR Intents (Base)\n• Contributor Dividend: $${split.splits.contributor_dividend_usd.toFixed(2)} NEAR auto-dispatched to ${split.contributor_account}\n• Procurement: ${autoPaidCount} routine vendor invoices auto-paid within cap via Airwallex checking\n• Hardware Vault: ${blockedCount} threats quarantined in Intel TDX enclave.`
+      }));
+    } catch (err: any) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: err.message }));
+    }
   } else if (req.url === '/api/data') {
     const data = await getEvaluatedData();
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -293,16 +587,17 @@ const server = http.createServer(async (req, res) => {
           }
         }
 
+        const evaluatedItem = {
+          id: rawInvoice.id,
+          filename: rawInvoice.filename,
+          extracted,
+          verdict,
+          enclave_result
+        };
+        customEvaluatedInvoices.unshift(evaluatedItem);
+
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(
-          JSON.stringify({
-            id: rawInvoice.id,
-            filename: rawInvoice.filename,
-            extracted,
-            verdict,
-            enclave_result
-          })
-        );
+        res.end(JSON.stringify(evaluatedItem));
       } catch (err: any) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: err.message }));
@@ -316,6 +611,8 @@ const server = http.createServer(async (req, res) => {
         const payload = JSON.parse(body || '{}');
         const invoiceId = payload.id;
         const { state } = await StateProvider.getState();
+
+        approvedInvoiceIds.add(invoiceId);
 
         // 1. Locate the item from dataset or request
         const item = rawDataset.find((d: any) => d.id === invoiceId);

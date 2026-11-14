@@ -92,6 +92,33 @@ export class ConstraintsManager {
     return Boolean(config.emergency_controls.kill_switch);
   }
 
+  public static updateConstraints(updates: Partial<{
+    max_single_payment_usd: number;
+    monthly_budget_usd: number;
+    max_inference_daily_usd: number;
+    retained_treasury_percent: number;
+    contributor_dividend_percent: number;
+    liquidity_reserve_percent: number;
+  }>): BusinessConstraints {
+    const config = this.getConstraints();
+    if (updates.max_single_payment_usd !== undefined) config.commercial_rules.max_single_payment_usd = updates.max_single_payment_usd;
+    if (updates.monthly_budget_usd !== undefined) config.commercial_rules.monthly_budget_usd = updates.monthly_budget_usd;
+    if (updates.max_inference_daily_usd !== undefined) config.commercial_rules.max_inference_daily_usd = updates.max_inference_daily_usd;
+    if (updates.retained_treasury_percent !== undefined) config.revenue_splits.retained_treasury_percent = updates.retained_treasury_percent;
+    if (updates.contributor_dividend_percent !== undefined) config.revenue_splits.contributor_dividend_percent = updates.contributor_dividend_percent;
+    if (updates.liquidity_reserve_percent !== undefined) config.revenue_splits.liquidity_reserve_percent = updates.liquidity_reserve_percent;
+
+    try {
+      const dump = yaml.dump(config, { indent: 2 });
+      fs.writeFileSync(this.configPath, dump, 'utf-8');
+      this.cachedConfig = config;
+      console.log(`[Constraints] Guardrails updated by CFO: max_single=$${config.commercial_rules.max_single_payment_usd}, monthly=$${config.commercial_rules.monthly_budget_usd}`);
+    } catch (err: any) {
+      console.error(`[Constraints] Failed to persist config.yaml: ${err.message}`);
+    }
+    return config;
+  }
+
   public static setKillSwitch(active: boolean): BusinessConstraints {
     const config = this.getConstraints();
     config.emergency_controls.kill_switch = active;
