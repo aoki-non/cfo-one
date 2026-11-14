@@ -26,7 +26,7 @@ export class InvoiceExtractor {
 
   public async extract(rawInvoice: RawInvoice): Promise<ExtractedInvoice> {
     // In automated unit tests, prefer deterministic extraction unless remote LLM is explicitly forced
-    if (process.env.NODE_ENV === 'test' && !process.env.FORCE_LLM_TEST) {
+    if ((process.env.NODE_ENV === 'test' || process.env.npm_lifecycle_event === 'test') && !process.env.FORCE_LLM_TEST) {
       return this.extractDeterministically(rawInvoice);
     }
 

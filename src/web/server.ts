@@ -661,11 +661,12 @@ const server = http.createServer(async (req, res) => {
 
         approvedInvoiceIds.add(invoiceId);
 
-        // 1. Locate the item from dataset or request
+        // 1. Locate the item from dataset, custom invoices, or request
         const item = rawDataset.find((d: any) => d.id === invoiceId);
+        const customItem = customEvaluatedInvoices.find((c: any) => c.id === invoiceId);
         let extracted = item 
           ? extractor.extractDeterministically({ id: item.id, filename: item.filename, content_text: item.raw_text })
-          : payload.extracted;
+          : (customItem ? customItem.extracted : payload.extracted);
 
         if (!extracted) {
           res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -733,8 +734,8 @@ const server = http.createServer(async (req, res) => {
           }
         };
 
-        // 4. Dispatch payment execution
-        const exec = await outlayer.executePayment(approvedVerdict, state.policy, { dryRun: false });
+        // 4. Dispatch payment execution with explicit owner authorization
+        const exec = await outlayer.executePayment(approvedVerdict, state.policy, { dryRun: false, isOwnerApproved: true });
         liveProcessedInvoices.push({
           invoice_number: extracted.invoice_number,
           vendor_name: extracted.vendor_name,
@@ -742,6 +743,16 @@ const server = http.createServer(async (req, res) => {
           amount_usd: extracted.amount_usd,
           processed_at: new Date().toISOString()
         });
+
+        if (customItem) {
+          customItem.verdict.action = 'ALLOW';
+          customItem.verdict.primary_reason = `Approved by Founder. Settled via Airwallex.`;
+          customItem.enclave_result = {
+            status: exec.output.status || (exec.output.success ? 'executed' : 'completed'),
+            transaction_id: exec.output.output?.transaction_id || exec.output.transaction_id,
+            attestation_url: exec.attestation_url
+          };
+        }
 
         // Record approved operational payout into Public Ledger
         PublicLedger.recordEntry({

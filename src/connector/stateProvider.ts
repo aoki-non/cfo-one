@@ -20,6 +20,7 @@ export class StateProvider {
   private static cachedSource: 'live_airwallex' | 'live_mercury' | 'local_fixture' = 'local_fixture';
   private static lastFetchTime: number = 0;
   private static readonly CACHE_TTL_MS: number = 5000; // 5-second TTL for live bank balance refresh
+  private static cumulativeLocalDebits: number = 0;
 
   public static async getState(forceRefresh: boolean = false): Promise<StateProviderResult> {
     const isCacheValid = !forceRefresh && this.cachedState && (Date.now() - this.lastFetchTime < this.CACHE_TTL_MS);
@@ -84,6 +85,12 @@ export class StateProvider {
     const raw = fs.readFileSync(statePath, 'utf-8');
     const state = JSON.parse(raw) as MercuryState;
 
+    state.balance_usd = Math.max(0, Math.round((state.balance_usd - this.cumulativeLocalDebits) * 100) / 100);
+    if (state.budget) {
+      state.budget.spent_or_pending_usd = Math.round((state.budget.spent_or_pending_usd + this.cumulativeLocalDebits) * 100) / 100;
+      state.budget.remaining_usd = Math.max(0, Math.round((state.budget.monthly_limit_usd - state.budget.spent_or_pending_usd) * 100) / 100);
+    }
+
     this.cachedState = state;
     this.cachedSource = 'local_fixture';
     this.lastFetchTime = Date.now();
@@ -96,12 +103,14 @@ export class StateProvider {
   }
 
   public static debitBalance(amountUsd: number): void {
+    this.cumulativeLocalDebits += amountUsd;
     if (this.cachedState) {
       this.cachedState.balance_usd = Math.max(0, Math.round((this.cachedState.balance_usd - amountUsd) * 100) / 100);
       if (this.cachedState.budget) {
         this.cachedState.budget.spent_or_pending_usd = Math.round((this.cachedState.budget.spent_or_pending_usd + amountUsd) * 100) / 100;
         this.cachedState.budget.remaining_usd = Math.max(0, Math.round((this.cachedState.budget.monthly_limit_usd - this.cachedState.budget.spent_or_pending_usd) * 100) / 100);
       }
+      this.lastFetchTime = Date.now();
     }
   }
 
