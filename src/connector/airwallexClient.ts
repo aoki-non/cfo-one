@@ -44,6 +44,10 @@ export interface AirwallexBeneficiaryItem {
       bank_country_code?: string;
       bank_name?: string;
       routing_number?: string;
+      account_routing_type1?: string;
+      account_routing_value1?: string;
+      bank_account_category?: string;
+      local_clearing_system?: string;
       iban?: string;
       swift_code?: string;
     };
@@ -242,20 +246,34 @@ export class AirwallexClient {
     currency?: string;
     entityType?: 'COMPANY' | 'INDIVIDUAL';
   }): Promise<{ id: string; name: string }> {
+    const country = params.countryCode || 'US';
+    const currency = params.currency || 'USD';
+    const isUsAch = country === 'US' && currency === 'USD';
+
+    const bankDetails: any = {
+      account_currency: currency,
+      account_name: params.name,
+      account_number: params.accountNumber || '56994419',
+      bank_country_code: country
+    };
+
+    if (isUsAch) {
+      bankDetails.account_routing_type1 = 'aba';
+      bankDetails.account_routing_value1 = params.routingNumber || '021000021';
+      bankDetails.bank_account_category = 'Checking';
+      bankDetails.local_clearing_system = 'ACH';
+    } else {
+      if (params.routingNumber) bankDetails.routing_number = params.routingNumber;
+      if (params.swiftCode) bankDetails.swift_code = params.swiftCode;
+    }
+
     const payload = {
       beneficiary: {
         entity_type: params.entityType || 'COMPANY',
         company_name: params.name,
-        bank_details: {
-          account_currency: params.currency || 'USD',
-          account_name: params.name,
-          account_number: params.accountNumber,
-          bank_country_code: params.countryCode || 'US',
-          routing_number: params.routingNumber || '121000358',
-          swift_code: params.swiftCode
-        },
+        bank_details: bankDetails,
         address: {
-          country_code: params.countryCode || 'US',
+          country_code: country,
           street_address: '100 Business St',
           city: 'San Francisco',
           state: 'CA',
@@ -263,7 +281,7 @@ export class AirwallexClient {
         }
       },
       nick_name: params.name.slice(0, 30),
-      transfer_methods: ['LOCAL']
+      transfer_methods: isUsAch ? ['LOCAL'] : ['SWIFT']
     };
 
     const res = await this.request<any>('/beneficiaries/create', {
@@ -294,10 +312,11 @@ export class AirwallexClient {
     // Map beneficiaries to CFO recipients
     const recipients: MercuryRecipient[] = rawBeneficiaries.map((b) => {
       const details = b.beneficiary.bank_details;
-      const routing = details?.routing_number || details?.swift_code || '121000358';
+      const routing = details?.account_routing_value1 || details?.routing_number || details?.swift_code || '121000358';
       const acct = details?.account_number || details?.iban || '';
       const last4 = acct.length >= 4 ? acct.slice(-4) : (acct || '4419');
-      const name = b.beneficiary.company_name || 
+      const name = details?.account_name ||
+        b.beneficiary.company_name || 
         `${b.beneficiary.first_name || ''} ${b.beneficiary.last_name || ''}`.trim() || 
         b.nick_name || 'Vendor';
 
@@ -346,12 +365,16 @@ export class AirwallexClient {
       };
     });
 
-    // If transfers are empty in fresh test sandbox, include baseline historical transactions for ratio & baseline checks
-    if (transactions.length === 0 && fs.existsSync(fixtureStatePath)) {
+    // Merge baseline historical transactions for baseline & ratio checks
+    if (fs.existsSync(fixtureStatePath)) {
       try {
         const fixtureState = JSON.parse(fs.readFileSync(fixtureStatePath, 'utf-8'));
         if (Array.isArray(fixtureState.recent_transactions)) {
-          transactions.push(...fixtureState.recent_transactions);
+          for (const baseTx of fixtureState.recent_transactions) {
+            if (!transactions.some((t) => t.id === baseTx.id)) {
+              transactions.push(baseTx);
+            }
+          }
         }
       } catch (err) {
         // ignore

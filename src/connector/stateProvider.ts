@@ -18,11 +18,14 @@ export interface StateProviderResult {
 export class StateProvider {
   private static cachedState: MercuryState | null = null;
   private static cachedSource: 'live_airwallex' | 'live_mercury' | 'local_fixture' = 'local_fixture';
+  private static lastFetchTime: number = 0;
+  private static readonly CACHE_TTL_MS: number = 5000; // 5-second TTL for live bank balance refresh
 
   public static async getState(forceRefresh: boolean = false): Promise<StateProviderResult> {
-    if (!forceRefresh && this.cachedState) {
+    const isCacheValid = !forceRefresh && this.cachedState && (Date.now() - this.lastFetchTime < this.CACHE_TTL_MS);
+    if (isCacheValid) {
       return {
-        state: this.cachedState,
+        state: this.cachedState!,
         source: this.cachedSource,
         message: `Using cached state (${this.cachedSource})`
       };
@@ -32,11 +35,13 @@ export class StateProvider {
     const airwallexClient = new AirwallexClient();
     if (airwallexClient.isConfigured()) {
       try {
-        console.log('[CFO-One] AIRWALLEX credentials detected. Connecting to Airwallex API...');
+        if (process.env.DEBUG) {
+          console.log('[CFO-One] AIRWALLEX credentials detected. Connecting to Airwallex API...');
+        }
         const liveState = await airwallexClient.syncState();
         this.cachedState = liveState;
         this.cachedSource = 'live_airwallex';
-        console.log(`[CFO-One] Connected to Live Airwallex! Balance: $${liveState.balance_usd}, Beneficiaries: ${liveState.recipients.length}`);
+        this.lastFetchTime = Date.now();
         return {
           state: liveState,
           source: 'live_airwallex',
@@ -51,11 +56,13 @@ export class StateProvider {
     const mercuryClient = new MercuryClient();
     if (mercuryClient.isConfigured()) {
       try {
-        console.log('[CFO-One] MERCURY_API_KEY detected. Connecting to live Mercury API...');
+        if (process.env.DEBUG) {
+          console.log('[CFO-One] MERCURY_API_KEY detected. Connecting to live Mercury API...');
+        }
         const liveState = await mercuryClient.syncState();
         this.cachedState = liveState;
         this.cachedSource = 'live_mercury';
-        console.log(`[CFO-One] Connected to Live Mercury API! Account: ${liveState.account_id}, Balance: $${liveState.balance_usd}, Payees: ${liveState.recipients.length}`);
+        this.lastFetchTime = Date.now();
         return {
           state: liveState,
           source: 'live_mercury',
@@ -67,7 +74,7 @@ export class StateProvider {
     }
 
     // Informative log
-    if (process.env.DEBUG || process.env.NODE_ENV !== 'test') {
+    if (process.env.DEBUG) {
       console.log('[CFO-One] No live banking credentials configured (Airwallex / Mercury). Running with sandbox fixture baseline.');
     }
 
@@ -79,6 +86,7 @@ export class StateProvider {
 
     this.cachedState = state;
     this.cachedSource = 'local_fixture';
+    this.lastFetchTime = Date.now();
 
     return {
       state,
@@ -87,7 +95,18 @@ export class StateProvider {
     };
   }
 
+  public static debitBalance(amountUsd: number): void {
+    if (this.cachedState) {
+      this.cachedState.balance_usd = Math.max(0, Math.round((this.cachedState.balance_usd - amountUsd) * 100) / 100);
+      if (this.cachedState.budget) {
+        this.cachedState.budget.spent_or_pending_usd = Math.round((this.cachedState.budget.spent_or_pending_usd + amountUsd) * 100) / 100;
+        this.cachedState.budget.remaining_usd = Math.max(0, Math.round((this.cachedState.budget.monthly_limit_usd - this.cachedState.budget.spent_or_pending_usd) * 100) / 100);
+      }
+    }
+  }
+
   public static clearCache(): void {
     this.cachedState = null;
+    this.lastFetchTime = 0;
   }
 }

@@ -1,5 +1,86 @@
 [
   {
+    "type": "PROCUREMENT_OUTFLOW",
+    "amount_usd": 45,
+    "asset": "USD (Airwallex)",
+    "counterparty": "Figma Inc",
+    "description": "Authorized operational payout: LEGIT-003",
+    "status": "SETTLED",
+    "attestation_url": "https://demo.airwallex.com/app/transfers/dd101621-d649-4a79-9eb6-c61b8e1345fc",
+    "tx_hash": "dd101621-d649-4a79-9eb6-c61b8e1345fc",
+    "id": "LEDGER-068",
+    "timestamp": "2026-11-14T19:55:28.108Z"
+  },
+  {
+    "type": "SALE_INFLOW",
+    "amount_usd": 100,
+    "asset": "USDC (Base)",
+    "counterparty": "0xTester",
+    "description": "Unit test ledger recording",
+    "status": "SETTLED",
+    "attestation_url": "https://api.outlayer.ai/attestation/quote_test",
+    "id": "LEDGER-067",
+    "timestamp": "2026-11-14T19:54:22.330Z"
+  },
+  {
+    "type": "PROCUREMENT_OUTFLOW",
+    "amount_usd": 89.5,
+    "asset": "USD (Airwallex)",
+    "counterparty": "Amazon Web Services",
+    "description": "Authorized operational payout: LEGIT-002",
+    "status": "SETTLED",
+    "attestation_url": "https://demo.airwallex.com/app/transfers/a48e7cd9-bb08-40bd-bbde-303b770c68ec",
+    "tx_hash": "a48e7cd9-bb08-40bd-bbde-303b770c68ec",
+    "id": "LEDGER-066",
+    "timestamp": "2026-11-14T19:53:36.218Z"
+  },
+  {
+    "type": "INFERENCE_COST",
+    "amount_usd": 0.045,
+    "asset": "USD",
+    "counterparty": "near-ai/llama-3.1-70b",
+    "description": "Agent procured extraction inference from NEAR AI Cloud",
+    "status": "SETTLED",
+    "attestation_url": "https://api.outlayer.ai/attestation/intel-tdx-quote-nearai",
+    "id": "LEDGER-065",
+    "timestamp": "2026-11-14T19:52:40.318Z"
+  },
+  {
+    "type": "REVENUE_SPLIT",
+    "amount_usd": 10,
+    "asset": "NEAR",
+    "counterparty": "contributors.testnet",
+    "description": "Automated 20% dividend payout from clearance fee intent_1794685960312_t1tmv",
+    "status": "DIVIDEND_PAID",
+    "attestation_url": "https://api.outlayer.ai/attestation/intel-tdx-quote-near_tx_div_mwgt",
+    "tx_hash": "near_tx_div_mwgtolmk_3285",
+    "id": "LEDGER-064",
+    "timestamp": "2026-11-14T19:52:40.317Z"
+  },
+  {
+    "type": "SALE_INFLOW",
+    "amount_usd": 50,
+    "asset": "USDC (Base)",
+    "counterparty": "0x71C895b321g0iBaseIntent",
+    "description": "Client Invoice Clearance Purchase via NEAR Intents (intent_1794685960312_t1tmv)",
+    "status": "SETTLED",
+    "attestation_url": "https://testnet.nearblocks.io/txns/0xintents_1794685960312_solver_settled",
+    "tx_hash": "0xintents_1794685960312_solver_settled",
+    "id": "LEDGER-063",
+    "timestamp": "2026-11-14T19:52:40.315Z"
+  },
+  {
+    "type": "SALE_INFLOW",
+    "amount_usd": 100,
+    "asset": "USDC (Base)",
+    "counterparty": "0xTester",
+    "description": "Unit test ledger recording",
+    "status": "SETTLED",
+    "attestation_url": "https://api.outlayer.ai/attestation/quote_test",
+    "id": "LEDGER-062",
+    "timestamp": "2026-11-14T19:51:47.997Z"
+  },
+  {
     "type": "SALE_INFLOW",
     "amount_usd": 100,
     "asset": "USDC (Base)",
