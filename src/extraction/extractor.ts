@@ -151,17 +151,20 @@ Output only raw JSON.`;
   public extractDeterministically(raw: RawInvoice): ExtractedInvoice {
     const text = raw.content_text;
 
-    // 1. Amount extraction
+    // 1. Amount extraction: match "Total: $42.00", "Amount: $42.00", "for $42.00", "of $42", or bare "$42.00"
     let amount = 0;
-    const amtMatch = text.match(/(?:Total Due|Total|Amount Due|Amount)[:\s]*\$?([0-9]+(?:\.[0-9]{2})?)/i);
+    const amtMatch = text.match(/(?:Total Due|Total|Amount Due|Amount|for|of)[:\s]*\$?([0-9]+(?:\.[0-9]{1,2})?)/i) ||
+                     text.match(/\$([0-9]+(?:\.[0-9]{1,2})?)/) ||
+                     text.match(/([0-9]+(?:\.[0-9]{2})?)\s*(?:USD|dollars)/i);
     if (amtMatch) {
       amount = parseFloat(amtMatch[1]);
     }
 
-    // 2. Invoice number extraction
+    // 2. Invoice number extraction:
+    // Match "INVOICE #INV-V-1101", "Invoice Number: INV-AWS-8820", "Invoice: INV-01", "INV-FIG-9041", "Invoice INV-01"
     let invoiceNumber = raw.id;
-    const invMatch = text.match(/(?:Invoice\s*(?:#|Number|:))\s*([A-Za-z0-9\-_]+)/i);
-    if (invMatch) {
+    const invMatch = text.match(/(?:Invoice\s*(?:#|Number|No\.?)?[:\s#]+)([A-Za-z0-9\-_]+)/i);
+    if (invMatch && !['number', 'no', 'date', 'total', 'summary', 'details', 'submission', 'invoice'].includes(invMatch[1].toLowerCase())) {
       invoiceNumber = invMatch[1];
     }
 
@@ -176,6 +179,10 @@ Output only raw JSON.`;
     else if (/DataDog/i.test(text)) vendorName = 'DataDog Inc';
     else if (/Cloudflare/i.test(text)) vendorName = 'Cloudflare Inc';
     else if (/Global Cloud Services/i.test(text)) vendorName = 'Global Cloud Services LLC';
+    else {
+      const vendorMatch = text.match(/(?:from|Vendor[:\s]+|Payee[:\s]+)\s*([A-Za-z0-9&.,' ]+?)(?=\s+(?:for|on|due|dated|invoice|amount|\$|\n|$))/i);
+      if (vendorMatch) vendorName = vendorMatch[1].trim();
+    }
 
     // Check for Cyrillic homoglyph spoofing (e.g. Cyrillic 'е' in Vercel)
     if (text.includes('V\u0435rc\u0435l')) {

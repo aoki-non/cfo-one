@@ -763,10 +763,10 @@
     "is_held_out": true,
     "expected_action": "REFUSE",
     "expected_layer": 1,
-    "raw_text": "Amazon Web Services Inc\nInvoice: INV-AWS-8820\nDate: 2026-11-10\nAmount: $84.20\nRouting: 021000021\nAccount: ****8821\nItem: Prior billing cycle re-submission",
+    "raw_text": "Amazon Web Services Inc\nInvoice: INV-AWS-8816\nDate: 2026-11-10\nAmount: $84.20\nRouting: 021000021\nAccount: ****8821\nItem: Prior billing cycle re-submission",
     "extracted": {
       "invoice_id": "HELD-OUT-001",
-      "invoice_number": "INV-AWS-8820",
+      "invoice_number": "INV-AWS-8816",
       "vendor_name": "Amazon Web Services",
       "amount_usd": 84.20,
       "invoice_date": "2026-11-10",

@@ -46,10 +46,17 @@ export function evaluateBaseline(
     };
   }
 
-  // Find historical transactions for this recipient
-  const pastTxs = state.recent_transactions.filter(
-    (tx) => tx.recipient_id === matchedRecipientId && tx.status === 'sent'
-  );
+  // Find historical transactions for this recipient (matching by recipient ID or vendor name)
+  const pastTxs = state.recent_transactions.filter((tx) => {
+    const matchesId = tx.recipient_id === matchedRecipientId;
+    const matchesName = Boolean(
+      invoice.vendor_name &&
+      tx.recipient_name &&
+      (tx.recipient_name.toLowerCase().includes(invoice.vendor_name.toLowerCase()) ||
+       invoice.vendor_name.toLowerCase().includes(tx.recipient_name.toLowerCase()))
+    );
+    return (matchesId || matchesName) && (tx.status === 'sent' || tx.status === 'pending') && Number(tx.amount_usd) > 0;
+  });
 
   const count = pastTxs.length;
 

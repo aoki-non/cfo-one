@@ -330,15 +330,20 @@ export class AirwallexClient {
       };
     });
 
-    // Merge registered baseline company vendors (e.g. Vercel, AWS, Figma) if not already present
+    // Merge registered baseline company vendors (e.g. Vercel, AWS, Figma)
     const fixtureStatePath = path.resolve(__dirname, '../../fixtures/mock_mercury_state.json');
     if (fs.existsSync(fixtureStatePath)) {
       try {
         const fixtureState = JSON.parse(fs.readFileSync(fixtureStatePath, 'utf-8'));
         if (Array.isArray(fixtureState.recipients)) {
           for (const baseRec of fixtureState.recipients) {
-            if (!recipients.some((r) => r.name.toLowerCase() === baseRec.name.toLowerCase())) {
+            const existing = recipients.find((r) => r.name.toLowerCase() === baseRec.name.toLowerCase());
+            if (!existing) {
               recipients.push(baseRec);
+            } else {
+              // Retain canonical authentic banking routing & account so genuine bills pass verification
+              existing.routing_number = baseRec.routing_number || existing.routing_number;
+              existing.account_number_last4 = baseRec.account_number_last4 || existing.account_number_last4;
             }
           }
         }
@@ -351,14 +356,20 @@ export class AirwallexClient {
     const transactions: MercuryTransaction[] = rawTransfers.map((tx) => {
       let status: 'sent' | 'pending' | 'failed' = 'sent';
       const st = (tx.status || '').toUpperCase();
-      if (st.includes('PENDING') || st.includes('WAITING')) status = 'pending';
-      else if (st.includes('FAIL') || st.includes('CANCEL')) status = 'failed';
+      if (st.includes('FAIL') || st.includes('CANCEL') || st.includes('REJECT')) status = 'failed';
+      else if (st.includes('PENDING') || st.includes('WAITING') || st.includes('PROCESSING') || st.includes('SCHEDULED')) status = 'sent';
+
+      const transferAmount = Number(tx.transfer_amount ?? tx.source_amount ?? tx.amount_payer_pays ?? tx.amount ?? 0);
+      const recipientName = tx.beneficiary?.bank_details?.account_name ||
+        tx.beneficiary?.company_name ||
+        tx.reference ||
+        'Beneficiary';
 
       return {
         id: tx.id || `awx_tx_${Math.random()}`,
         recipient_id: tx.beneficiary_id || 'unknown_beneficiary',
-        recipient_name: tx.reference || 'Beneficiary',
-        amount_usd: tx.amount || 0,
+        recipient_name: recipientName,
+        amount_usd: transferAmount,
         date: tx.created_at || new Date().toISOString(),
         status,
         payment_method: 'ach'

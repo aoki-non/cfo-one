@@ -1,5 +1,97 @@
 [
   {
+    "type": "SALE_INFLOW",
+    "amount_usd": 100,
+    "asset": "USDC (Base)",
+    "counterparty": "0xTester",
+    "description": "Unit test ledger recording",
+    "status": "SETTLED",
+    "attestation_url": "https://api.outlayer.ai/attestation/quote_test",
+    "id": "LEDGER-076",
+    "timestamp": "2026-11-14T20:22:16.938Z"
+  },
+  {
+    "type": "SALE_INFLOW",
+    "amount_usd": 100,
+    "asset": "USDC (Base)",
+    "counterparty": "0xTester",
+    "description": "Unit test ledger recording",
+    "status": "SETTLED",
+    "attestation_url": "https://api.outlayer.ai/attestation/quote_test",
+    "id": "LEDGER-075",
+    "timestamp": "2026-11-14T20:14:52.843Z"
+  },
+  {
+    "type": "INFERENCE_COST",
+    "amount_usd": 0.045,
+    "asset": "USD",
+    "counterparty": "near-ai/llama-3.1-70b",
+    "description": "Agent procured extraction inference from NEAR AI Cloud",
+    "status": "SETTLED",
+    "attestation_url": "https://api.outlayer.ai/attestation/intel-tdx-quote-nearai",
+    "id": "LEDGER-074",
+    "timestamp": "2026-11-14T20:12:05.062Z"
+  },
+  {
+    "type": "SECURITY_INTERCEPT",
+    "amount_usd": 42,
+    "asset": "USD",
+    "counterparty": "Vercel Inc",
+    "description": "Threat intercepted during clearance: CRITICAL SECURITY ALERT: Invoice routing number (121000358) DOES NOT MATCH saved recipient record (021000021). Probable Business Email Compromise (BEC) / Account Takeover.",
+    "status": "BLOCKED",
+    "attestation_url": "https://api.outlayer.ai/attestation/intel-tdx-quote-0x4f8812cbb891",
+    "id": "LEDGER-073",
+    "timestamp": "2026-11-14T20:12:04.059Z"
+  },
+  {
+    "type": "REVENUE_SPLIT",
+    "amount_usd": 5,
+    "asset": "NEAR",
+    "counterparty": "contributors.testnet",
+    "description": "Automated 20% dividend payout from clearance fee sale intent_1794687113979_kjk44",
+    "status": "DIVIDEND_PAID",
+    "attestation_url": "https://api.outlayer.ai/attestation/intel-tdx-quote-near_tx_div_mwgu",
+    "tx_hash": "near_tx_div_mwguddqw_si13",
+    "id": "LEDGER-072",
+    "timestamp": "2026-11-14T20:11:56.504Z"
+  },
+  {
+    "type": "SALE_INFLOW",
+    "amount_usd": 25,
+    "asset": "USDC (Base)",
+    "counterparty": "0xClientDao...9b82",
+    "description": "Client purchased Confidential TEE Invoice Clearance for Vendor INV-901",
+    "status": "SETTLED",
+    "attestation_url": "https://testnet.nearblocks.io/txns/0xintents_1794687115482_solver_settled",
+    "tx_hash": "0xintents_1794687115482_solver_settled",
+    "id": "LEDGER-071",
+    "timestamp": "2026-11-14T20:11:55.500Z"
+  },
+  {
+    "type": "REVENUE_SPLIT",
+    "amount_usd": 5,
+    "asset": "NEAR",
+    "counterparty": "contributors.testnet",
+    "description": "Automated 20% dividend payout from clearance fee sale intent_1794686885654_raajx",
+    "status": "DIVIDEND_PAID",
+    "attestation_url": "https://api.outlayer.ai/attestation/intel-tdx-quote-near_tx_div_mwgu",
+    "tx_hash": "near_tx_div_mwgu8hk7_pgjl",
+    "id": "LEDGER-070",
+    "timestamp": "2026-11-14T20:08:08.168Z"
+  },
+  {
+    "type": "SALE_INFLOW",
+    "amount_usd": 25,
+    "asset": "USDC (Base)",
+    "counterparty": "0xClientDao...9b82",
+    "description": "Client purchased Confidential TEE Invoice Clearance for Vendor INV-901",
+    "status": "SETTLED",
+    "attestation_url": "https://testnet.nearblocks.io/txns/0xintents_1794686887156_solver_settled",
+    "tx_hash": "0xintents_1794686887156_solver_settled",
+    "id": "LEDGER-069",
+    "timestamp": "2026-11-14T20:08:07.159Z"
+  },
+  {
     "type": "PROCUREMENT_OUTFLOW",
     "amount_usd": 45,
     "asset": "USD (Airwallex)",
